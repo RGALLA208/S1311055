@@ -134,6 +134,17 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    int numSamples; // Number of audio samples to process
+    float* channelData; //Array of samples, length numSamples
+    float inputGain;
+
+    float inputGaindB_; //Gain in decibels, controlled by the user
+    int distortionType_; // Index of the type of distortion
+
+    //Calculate input gain once to save calculations
+    inputGain = powf(10.0f, inputGaindB_ / 20.0f);
+
+
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -144,6 +155,55 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    for (int i = 0; i < numSamples; ++i) {
+        auto in = channelData[i];
+        auto gain = inputGain->get();
+        auto distortionType_ = comboChoice->getIndex();
+
+        if (distortionType_ == 1) { // HardClipping
+            float threshold = 1.0f;
+            if (in > threshold)
+                out = threshold;
+            else if (in < -threshold)
+                out = -threshold;
+            else
+                out = in;
+        }
+        else if (distortionType_ == kTypeSoftClipping) { //SoftClipping
+            float threshold1 = 1.0f / 3.0f;
+            float threshold2 = 2.0f / 3.0f;
+            if (in > threshold2)
+                out = 1.0f;
+            else if (in > threshold1)
+                out = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
+            else if (in < -threshold2)
+                out = -1.0f;
+            else if(in < -threshold1
+                out = -(3.0f - (2.0f + 3.0f * in) * (2.0f + 3.0f * in)) / 3.0f;
+            else
+                out = 2.0f* in;
+        }
+        else if(distortionType_ == ktypeSoftClippingExponential) //SoftClipping exponential
+        {
+        if(in > 0)
+            out = 1.0f - expf(-in);
+        else
+            out = -1.0f + expf(in);
+        }
+        else if (distortionType_ == kTypeFullWaveRectifier) { // Full-wave rectifier (absolute value)
+            
+            out = fabsf(in);
+        }
+        else if (distortionType_ == kTypeHalfWaveRectifier) { // Half-wave rectifier (absolute value)
+          
+            if (in > 0)
+                out = in;
+            else
+            out = 0;
+        }
+//Put output back in buffer
+        channelData[i] = in;
+    }
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     // Make sure to reset the state if your inner loop is processing

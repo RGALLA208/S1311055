@@ -57,5 +57,7 @@ public:
 
 private:
     //==============================================================================
+    AudioParameterChoice* comboChoice;
+    AudioParameterFloat* inputGain;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessor)
 };
