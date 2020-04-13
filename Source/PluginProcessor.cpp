@@ -149,7 +149,7 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	
 
 	float inputGainDecibels_; //Gain in decibels, controlled by the user
-	int distortionType_; // Index of the type of distortion
+	
 
 	//Calculate input gain once to save calculations
 	//inputGain = powf(10.0f, inputGainDecibels_ / 20.0f);
@@ -165,15 +165,29 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 		
-	float inGain = (inputGain->get());
+	
 
-	for (int i = 0; i < numSamples; ++i) {
+
+	// This is the place where you'd normally do the guts of your plugin's
+	// audio processing...
+	// Make sure to reset the state if your inner loop is processing
+	// the samples and the outer loop is handling the channels.
+	// Alternatively, you can process the samples with the channels
+	// interleaved by keeping the same state.
+    float inGain = (inputGain->get()); //Get Input Gain Value
+	//int distortionType = (di->get());  // Index of the type of distortion
+	auto distortionType_ = comboChoice->getIndex();
+	for (int channel = 0; channel < totalNumInputChannels; ++channel)
+	{
+		auto* channelData = buffer.getWritePointer(channel);
+
+
+		// ..do something to the data...
+			for (int i = 0; i < numSamples; ++i) {
 
 		auto in = channelData[i];
-		auto distortionType_ = comboChoice->getIndex();
 		in = in * inGain;
 
-		
 
 		if (distortionType_ == 1) { // HardClipping
 			float threshold = 1.0f; // Thresh1 = 1.0
@@ -220,17 +234,6 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 		//Put output back in buffer
 		channelData[i] = in;
 	}
-	// This is the place where you'd normally do the guts of your plugin's
-	// audio processing...
-	// Make sure to reset the state if your inner loop is processing
-	// the samples and the outer loop is handling the channels.
-	// Alternatively, you can process the samples with the channels
-	// interleaved by keeping the same state.
-	for (int channel = 0; channel < totalNumInputChannels; ++channel)
-	{
-		auto* channelData = buffer.getWritePointer(channel);
-
-		// ..do something to the data...
 	}
 	
 }
