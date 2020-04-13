@@ -57,7 +57,7 @@ public:
 
     //int SpectralDistortionAudioProcessor:signum(float x)
 	
-    
+public:
     //Parameters
 	AudioParameterFloat* inputGain;
 	AudioParameterChoice* comboChoice;
