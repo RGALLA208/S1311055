@@ -29,9 +29,11 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 {
 
 
-    addParameter(inputGain = new AudioParameterFloat("inputGain", "Input Gain", NormalisableRange<float>(0.0f, 10.0f), 5.0f));
+   inputGain =  new AudioParameterFloat("inputGain", "Input Gain", 0.0f, 10.0f, 0.0f);
+	addParameter(inputGain);
     
-    addParameter(comboChoice = new AudioParameterChoice("DistortionType_", "Distortion Type", {"Select one", "Hard Clipping", "Soft Clipping", "Soft Clipping Exponential", "Full-Wave Rectified", "Half-Wave Rectified" }, 0));
+    //comboChoice = new AudioParameterChoice("DistortionType_", "Distortion Type", {"Select one", "Hard Clipping", "Soft Clipping", "Soft Clipping Exponential", "Full-Wave Rectified", "Half-Wave Rectified" }, 0);
+	//addParameter(comboChoice);
 }
 
 SpectralDistortionAudioProcessor::~SpectralDistortionAudioProcessor()
@@ -162,54 +164,58 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	// this code if your algorithm always overwrites all the output channels.
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
+		
+	float inGain = (inputGain->get());
 
 	for (int i = 0; i < numSamples; ++i) {
 
 		auto in = channelData[i];
-		auto ingain = inputGain->getValue();
 		auto distortionType_ = comboChoice->getIndex();
+		in = in * inGain;
+
+		
 
 		if (distortionType_ == 1) { // HardClipping
 			float threshold = 1.0f;
 			if (in > threshold)
-				channelData[i] = threshold;
+				in = threshold;
 			else if (in < -threshold)
-				channelData[i] = -threshold;
+				in = -threshold;
 			else
-				channelData[i] = in;
+				in = in;
 		}
 		else if (distortionType_ == 2) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f;
 			float threshold2 = 2.0f / 3.0f;
 			if (in > threshold2)
-				channelData[i] = 1.0f;
+				in = 1.0f;
 			else if (in > threshold1)
-				channelData[i] = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
+				in = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
 			else if (in < -threshold2)
-				channelData[i] = -1.0f;
+				in = -1.0f;
 			else if (in < -threshold1)
-				channelData[i] = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
+				in = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
 			else
-				channelData[i] = 2.0f* in;
+				in = 2.0f* in;
 		}
 		else if (distortionType_ == 3) //SoftClipping exponential
 		{
 			if (in > 0) 
-				channelData[i] = 1.0f - expf(-in);
+				in = 1.0f - expf(-in);
 			else
-				channelData[i] = -1.0f + expf(in);
+				in = -1.0f + expf(in);
 			
 		}
 		else if (distortionType_ == 4) { // Full-wave rectifier (absolute value)
 
-			channelData[i] = fabsf(in);
+			in = fabsf(in);
 		}
 		else if (distortionType_ == 5) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
-				channelData[i] = in;
+				in = in;
 			else
-				channelData[i] = 0;
+				in = 0;
 		}
 		//Put output back in buffer
 		channelData[i] = in;
@@ -237,7 +243,7 @@ bool SpectralDistortionAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* SpectralDistortionAudioProcessor::createEditor()
 {
-    return new SpectralDistortionAudioProcessorEditor (*this);
+	return new GenericAudioProcessorEditor(this);
 }
 
 //==============================================================================
@@ -246,8 +252,8 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-	//MemoryOutputStream stream(destData, true);
-	//stream.writeFloat(*inputGain);
+	MemoryOutputStream stream(destData, true);
+	stream.writeFloat(*inputGain);
 	//stream.writeInt(*comboChoice);
 }
 
@@ -255,8 +261,8 @@ void SpectralDistortionAudioProcessor::setStateInformation (const void* data, in
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-	//MemoryInputStream stream(data, static_cast<size_t> (sizeInBytes), false);
-	//inputGain->setValueNotifyingHost(inputGain->getNormalisableRange().convertTo0to1(stream.readFloat()));
+	MemoryInputStream stream(data, static_cast<size_t> (sizeInBytes), false);
+	*inputGain = stream.readFloat();
 	//comboChoice->setValueNotifyingHost(comboChoice->getNormalisableRange().convertTo0to1(stream.readInt()));
 }
 
