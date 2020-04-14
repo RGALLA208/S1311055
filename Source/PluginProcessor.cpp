@@ -14,29 +14,38 @@
 //==============================================================================
 SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+	: AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+		.withInput("Input", AudioChannelSet::stereo(), true)
+#endif
+		.withOutput("Output", AudioChannelSet::stereo(), true)
+#endif
+	), treeState(*this, nullptr, Identifier("PARAMETERS"), { std::make_unique<AudioParameterFloat>("cutoff", "Cutoff", 20.0f, 20000.0f, 20000.0f),
+		std::make_unique<AudioParameterFloat>("resonance", "Resonance", 0.0f, 1.10f, 0.15f),
+		 std::make_unique<AudioParameterFloat>("drive", "Drive", 1.0f, 25.0f, 1.0f),
+		 std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("LPF12", "LPF24", "HPF12", "HPF24"), 0) })
+#endif
+{
+	const StringArray params = { "cutoff", "resonance", "drive", "mode" };
+	for (int i = 0; i <= 3; ++i)
+	{
+		// adds a listener to each parameter in the array.
+		treeState.addParameterListener(params[i], this);
+	}
+	addParameter(inputGain = new AudioParameterFloat("inputGain", "Input Gain", NormalisableRange<float>(0.0f, 10.0f), 5.0f));
+
+	addParameter(comboChoice = new AudioParameterChoice("distortionType_",
+		"Distortion Type:", { "Select one", "Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier" }, 0));
+}
 	
 
 
-#endif
-{
+   
+    
+    
 
 
-   addParameter(inputGain =  new AudioParameterFloat("inputGain", "Input Gain", NormalisableRange<float>(0.0f, 10.0f), 5.0f));
-    
-   addParameter(comboChoice = new AudioParameterChoice("distortionType_",
-	   "Distortion Type:", { "Select one", "Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier" }, 0));
-    
-    //comboChoice = new AudioParameterChoice("DistortionType_", "Distortion Type", {"Select one", "Hard Clipping", "Soft Clipping", "Soft Clipping Exponential", "Full-Wave Rectified", "Half-Wave Rectified" }, 0);
-	//addParameter(comboChoice);
-}
 
 SpectralDistortionAudioProcessor::~SpectralDistortionAudioProcessor()
 {
@@ -109,6 +118,14 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+	dsp::ProcessSpec spec;
+	spec.sampleRate = sampleRate;
+	spec.maximumBlockSize = samplesPerBlock;
+	spec.numChannels = getTotalNumOutputChannels();
+	ladderFilter.reset();
+	ladderFilter.prepare(spec);
+	ladderFilter.setEnabled(true);
+
 }
 
 void SpectralDistortionAudioProcessor::releaseResources()
@@ -166,6 +183,11 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	// this code if your algorithm always overwrites all the output channels.
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
+
+	juce::dsp::AudioBlock<float> block(buffer);
+	auto processingContext = dsp::ProcessContextReplacing<float>(block);
+	ladderFilter.process(processingContext);
+
 		
 	// This is the place where you'd normally do the guts of your plugin's
 	// audio processing...
@@ -246,7 +268,7 @@ bool SpectralDistortionAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* SpectralDistortionAudioProcessor::createEditor()
 {
-	return new GenericAudioProcessorEditor(this);
+	return new SpectralDistortionAudioProcessorEditor(*this, treeState);
 }
 
 //==============================================================================
@@ -276,4 +298,8 @@ void SpectralDistortionAudioProcessor::setStateInformation (const void* data, in
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new SpectralDistortionAudioProcessor();
+}
+
+void SpectralDistortionAudioProcessor::parameterChanged(const String& parameterID, float newValue)
+{
 }
