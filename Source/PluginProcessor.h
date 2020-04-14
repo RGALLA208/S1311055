@@ -57,17 +57,19 @@ public:
 
     //int SpectralDistortionAudioProcessor:signum(float x)
 	
+
+
 public:
     
 
-  
+    //Parameters
+    AudioParameterFloat* inputGain;
+    AudioParameterChoice* comboChoice;
     
 private:
     //==============================================================================
    
-    //Parameters
-    AudioParameterFloat* inputGain;
-    AudioParameterChoice* comboChoice;
+   
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessor)
 };

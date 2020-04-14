@@ -29,8 +29,10 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 {
 
 
-   inputGain =  new AudioParameterFloat("inputGain", "Input Gain", 0.0f, 10.0f, 0.0f);
-	addParameter(inputGain);
+   addParameter(inputGain =  new AudioParameterFloat("inputGain", "Input Gain", NormalisableRange<float>(0.0f, 10.0f), 5.0f));
+    
+   addParameter(comboChoice = new AudioParameterChoice("distortionType_",
+	   "Distortion Type:", { "Select one", "Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier" }, 0));
     
     //comboChoice = new AudioParameterChoice("DistortionType_", "Distortion Type", {"Select one", "Hard Clipping", "Soft Clipping", "Soft Clipping Exponential", "Full-Wave Rectified", "Half-Wave Rectified" }, 0);
 	//addParameter(comboChoice);
@@ -165,22 +167,20 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 		
-	
-
-
 	// This is the place where you'd normally do the guts of your plugin's
 	// audio processing...
 	// Make sure to reset the state if your inner loop is processing
 	// the samples and the outer loop is handling the channels.
 	// Alternatively, you can process the samples with the channels
 	// interleaved by keeping the same state.
-    float inGain = (inputGain->get()); //Get Input Gain Value
-	//int distortionType = (di->get());  // Index of the type of distortion
-	auto distortionType_ = comboChoice->getIndex();
+    
+	
+	
 	for (int channel = 0; channel < totalNumInputChannels; ++channel)
 	{
 		auto* channelData = buffer.getWritePointer(channel);
-
+		float inGain = (inputGain->get()); //Get Input Gain Value
+		auto distortionType_ = comboChoice->getIndex();
 
 		// ..do something to the data...
 			for (int i = 0; i < numSamples; ++i) {
@@ -257,6 +257,7 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // as intermediaries to make it easy to save and load complex data.
 	MemoryOutputStream stream(destData, true);
 	stream.writeFloat(*inputGain);
+	stream.writeInt(*comboChoice);
 	//stream.writeInt(*comboChoice);
 }
 
@@ -265,7 +266,8 @@ void SpectralDistortionAudioProcessor::setStateInformation (const void* data, in
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 	MemoryInputStream stream(data, static_cast<size_t> (sizeInBytes), false);
-	*inputGain = stream.readFloat();
+	inputGain->setValueNotifyingHost(inputGain->getNormalisableRange().convertTo0to1(stream.readFloat()));
+	comboChoice->setValueNotifyingHost(comboChoice->getNormalisableRange().convertTo0to1(stream.readInt()));
 	//comboChoice->setValueNotifyingHost(comboChoice->getNormalisableRange().convertTo0to1(stream.readInt()));
 }
 
