@@ -65,12 +65,14 @@ public:
     
 
     //Parameters
-    AudioParameterFloat* inputGain;
-    AudioParameterChoice* comboChoice;
+   
     
 private:
     //==============================================================================
-   AudioProcessorValueTreeState treeState;
+    AudioParameterFloat* inputGain;
+    float previousGain;
+    AudioParameterChoice* comboChoice;
+    AudioProcessorValueTreeState treeState;
    dsp::LadderFilter<float> ladderFilter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessor)
