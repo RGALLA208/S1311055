@@ -55,16 +55,9 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    //int SpectralDistortionAudioProcessor:signum(float x)
-	
-    
-    //Parameters
-	AudioParameterFloat* inputGain;
-	AudioParameterChoice* comboChoice;
-  
-    
 private:
     //==============================================================================
-    
+    AudioParameterChoice* comboChoice;
+    AudioParameterFloat* inputGain;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessor)
 };
