@@ -27,8 +27,19 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 {
 	state = new AudioProcessorValueTreeState(*this, nullptr);
-	
-	 }
+
+	state->createAndAddParameter("drive", "Drive", "Drive", NormalisableRange<float>(0.f, 1.f, 0.001), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.f, 3000, 1), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.f, 1.f, 0.001), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("volume", "Volume", "Volume",  NormalisableRange<float>(0.f, 3.f, 0.001), 1.0, nullptr, nullptr);
+
+	state->state = ValueTree("drive");
+	state->state = ValueTree("range");
+	state->state = ValueTree("wet");
+	state->state = ValueTree("volume");
+
+
+ }
 
 SpectralDistortionAudioProcessor::~SpectralDistortionAudioProcessor()
 {
@@ -176,25 +187,16 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+
+	float drive = *state->getRawParameterValue("drive");
+	float range = *state->getRawParameterValue("range");
+	float wet = *state->getRawParameterValue("wet");
+	float volume = *state->getRawParameterValue("volume");
+
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
-
-
-
-		
-	// This is the place where you'd normally do the guts of your plugin's
-	// audio processing...
-	// Make sure to reset the state if your inner loop is processing
-	// the samples and the outer loop is handling the channels.
-	// Alternatively, you can process the samples with the channels
-	// interleaved by keeping the same state.
-    
-	
-	
-	for (int channel = 0; channel < totalNumInputChannels; ++channel)
-	{
-		auto* channelData = buffer.getWritePointer(channel);
 		auto currentGain = (inputGain->get()); //Get Input Gain Value
 		auto distortionType_ = comboChoice->getIndex();
 
@@ -202,6 +204,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			for (int i = 0; i < numSamples; ++i) {
 
 		auto in = channelData[i];
+		
+
+		float cleanSignal = in;
+
+
 		if (currentGain == previousGain)
 		{
 			buffer.applyGain(currentGain);
@@ -211,8 +218,14 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			buffer.applyGainRamp(0, buffer.getNumSamples(), previousGain, currentGain);
 			previousGain = currentGain;
 		}
-	//in = in * inGain;
 
+		if (distortionType_ == 0) { // TestFunction
+		
+			in = drive * range;
+
+				in = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
+			
+		}
 
 		if (distortionType_ == 1) { // HardClipping
 			float threshold = 1.0f; // Thresh1 = 1.0
@@ -266,7 +279,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
         // ..do something to the data...
     }
 
-}
+
 
 AudioProcessorValueTreeState& SpectralDistortionAudioProcessor:: getState() {
 
@@ -294,12 +307,24 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+	MemoryOutputStream stream(destData, false);
+	state->state.writeToStream(stream);
+
+
 }
 
 void SpectralDistortionAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+	ValueTree tree = ValueTree::readFromData(data, sizeInBytes);
+
+	if (tree.isValid()) {
+
+		state->state = tree;
+	}
 }
 
 //==============================================================================

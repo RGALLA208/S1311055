@@ -60,19 +60,15 @@ SpectralDistortionAudioProcessorEditor::~SpectralDistortionAudioProcessorEditor(
 void SpectralDistortionAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-
-    g.fillAll(Colours::antiquewhite);
+    g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
     g.setColour(Colours::black);
-
+    g.setFont(15.0f);
  
-
-
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
-
-    g.setColour (Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
+    g.drawText("Drive", ((getWidth() / 5 * 1) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false );
+    g.drawText("Range", ((getWidth() / 5 * 2) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false);
+    g.drawText("Wet", ((getWidth() / 5 * 3) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false);
+    g.drawText("Volume", ((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false);
+   
 }
 
 void SpectralDistortionAudioProcessorEditor::resized()
