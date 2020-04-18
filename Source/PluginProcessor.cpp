@@ -27,8 +27,7 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 
 #endif
 {
-
-
+  
     addParameter(inputGain = new AudioParameterFloat("inputGain", "Input Gain", NormalisableRange<float>(0.0f, 10.0f), 5.0f));
     
     addParameter(comboChoice = new AudioParameterChoice("DistortionType_", "Distortion Type", {"Select one", "Hard Clipping", "Soft Clipping", "Soft Clipping Exponential", "Full-Wave Rectified", "Half-Wave Rectified" }, 0));
@@ -144,13 +143,13 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	auto totalNumOutputChannels = getTotalNumOutputChannels();
 	int numSamples; // Number of audio samples to process
 	float* channelData; //Array of samples, length numSamples
-	
+	float inputGain;
 
 	float inputGainDecibels_; //Gain in decibels, controlled by the user
 	int distortionType_; // Index of the type of distortion
 
 	//Calculate input gain once to save calculations
-	//inputGain = powf(10.0f, inputGainDecibels_ / 20.0f);
+	inputGain = powf(10.0f, inputGainDecibels_ / 20.0f);
 
 
 
@@ -164,7 +163,6 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 		buffer.clear(i, 0, buffer.getNumSamples());
 
 	for (int i = 0; i < numSamples; ++i) {
-
 		auto in = channelData[i];
 		auto ingain = inputGain->getValue();
 		auto distortionType_ = comboChoice->getIndex();
@@ -246,9 +244,9 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-	//MemoryOutputStream stream(destData, true);
-	//stream.writeFloat(*inputGain);
-	//stream.writeInt(*comboChoice);
+	MemoryOutputStream stream(destData, true);
+	stream.writeFloat(*inputGain);
+	stream.writeInt(*comboChoice);
 }
 
 void SpectralDistortionAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
@@ -256,8 +254,8 @@ void SpectralDistortionAudioProcessor::setStateInformation (const void* data, in
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 	//MemoryInputStream stream(data, static_cast<size_t> (sizeInBytes), false);
-	//inputGain->setValueNotifyingHost(inputGain->getNormalisableRange().convertTo0to1(stream.readFloat()));
-	//comboChoice->setValueNotifyingHost(comboChoice->getNormalisableRange().convertTo0to1(stream.readInt()));
+	inputGain->setValueNotifyingHost(inputGain->getNormalisableRange().convertTo0to1(stream.readFloat()));
+	comboChoice->setValueNotifyingHost(comboChoice->getNormalisableRange().convertTo0to1(stream.readInt()))
 }
 
 //==============================================================================
