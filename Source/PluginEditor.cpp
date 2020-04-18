@@ -17,7 +17,10 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-
+	mGainSlider.setSliderStyle(Slider::SliderStyle::LinearVertical);
+	mGainSlider.setRange (0.0f, 1.0f, 0.01);
+	mGainSlider.setValue(0.5f);
+	addAndMakeVisible(mGainSlider);
 
 	setSize (400, 300);
 }
@@ -30,7 +33,7 @@ SpectralDistortionAudioProcessorEditor::~SpectralDistortionAudioProcessorEditor(
 void SpectralDistortionAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll(Colour(0xff323e44));
+	g.fillAll(Colours::black);
 
    
    
@@ -40,5 +43,5 @@ void SpectralDistortionAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-	
+	mGainSlider.setBounds(getWidth() / 2 - 50, getHeight() / 2 - 75, 100, 150);
 }
