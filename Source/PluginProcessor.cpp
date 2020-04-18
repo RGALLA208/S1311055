@@ -25,10 +25,6 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 		std::make_unique<AudioParameterFloat>("resonance", "Resonance", 0.0f, 1.10f, 0.15f),
 		 std::make_unique<AudioParameterFloat>("drive", "Drive", 1.0f, 25.0f, 1.0f),
 		 std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("LPF12", "LPF24", "HPF12", "HPF24"), 0) })
-		//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier"),
-		//	std::make_unique<AudioParameterChoice>("inputGain", "Distortion Type:", StringArray("Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier"), 0))) })
-	
-		
 #endif
 {
 	const StringArray params = { "cutoff", "resonance", "drive", "mode" };
@@ -122,7 +118,6 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-	previousGain = *inputGain;
 	dsp::ProcessSpec spec;
 	spec.sampleRate = sampleRate;
 	spec.maximumBlockSize = samplesPerBlock;
@@ -172,7 +167,7 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	float* channelData; //Array of samples, length numSamples
 	
 
-	//float inputGainDecibels_; //Gain in decibels, controlled by the user
+	float inputGainDecibels_; //Gain in decibels, controlled by the user
 	
 
 	//Calculate input gain once to save calculations
@@ -206,28 +201,18 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	for (int channel = 0; channel < totalNumInputChannels; ++channel)
 	{
 		auto* channelData = buffer.getWritePointer(channel);
-		auto currentGain = (inputGain->get()); //Get Input Gain Value
+		float inGain = (inputGain->get()); //Get Input Gain Value
 		auto distortionType_ = comboChoice->getIndex();
 
 		// ..do something to the data...
 			for (int i = 0; i < numSamples; ++i) {
 
 		auto in = channelData[i];
-		if (currentGain == previousGain)
-		{
-			buffer.applyGain(currentGain);
-		}
-		else
-		{
-			buffer.applyGainRamp(0, buffer.getNumSamples(), previousGain, currentGain);
-			previousGain = currentGain;
-		}
-	//in = in * inGain;
+		in = in * inGain;
 
 
 		if (distortionType_ == 1) { // HardClipping
 			float threshold = 1.0f; // Thresh1 = 1.0
-
 			if (in > threshold)
 				in = threshold;
 			else if (in < -threshold)
