@@ -176,7 +176,7 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 		
 
 		if (distortionType_ == 1) { // HardClipping
-			float threshold = 1.0f; // Thresh1 = 1.0
+			float threshold = 1.0f;
 			if (in > threshold)
 				in = threshold;
 			else if (in < -threshold)
@@ -185,8 +185,8 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 				in = in;
 		}
 		else if (distortionType_ == 2) { //SoftClipping
-			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
-			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
+			float threshold1 = 1.0f / 3.0f;
+			float threshold2 = 2.0f / 3.0f;
 			if (in > threshold2)
 				in = 1.0f;
 			else if (in > threshold1)
