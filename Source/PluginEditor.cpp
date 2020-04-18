@@ -12,7 +12,11 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (SpectralDistortionAudioProcessor& p) : AudioProcessorEditor(&p), processor (p)
+
+
+SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (SpectralDistortionAudioProcessor& p)
+    : AudioProcessorEditor (&p), processor (p)
+
 {
 
     addAndMakeVisible((driveKnob) = new Slider("Drive"));
@@ -39,8 +43,12 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
 
+
     setSize(500, 200);
 
+
+
+    setSize (400, 284);
 
 }
 
@@ -52,24 +60,32 @@ SpectralDistortionAudioProcessorEditor::~SpectralDistortionAudioProcessorEditor(
 void SpectralDistortionAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
+
     g.fillAll(Colours::antiquewhite);
     g.setColour(Colours::black);
-    // Title Text
+
  
 
 
-   
-   
+    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+
+
+    g.setColour (Colours::white);
+    g.setFont (15.0f);
+    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
 }
 
 void SpectralDistortionAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+
    
     driveKnob->setBounds(((getWidth() / 5 * 1) - (100 / 2)),((getHeight() / 2) - (100 / 2)), 100, 100);
     rangeKnob->setBounds(((getWidth() / 5 * 2) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
     wetKnob->setBounds(((getWidth() / 5 * 3) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
     volumeKnob->setBounds(((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
 	
+
+
 }

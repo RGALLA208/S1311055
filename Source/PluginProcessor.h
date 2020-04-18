@@ -55,6 +55,7 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+
    
 
     //int SpectralDistortionAudioProcessor:signum(float x)
@@ -75,6 +76,10 @@ private:
     float previousGain;
     AudioParameterChoice* comboChoice;
    dsp::LadderFilter<float> ladderFilter;
+
+
+private:
+    //==============================================================================
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessor)
 };

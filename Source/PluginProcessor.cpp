@@ -14,6 +14,7 @@
 //==============================================================================
 SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
+
 	: AudioProcessor(BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
@@ -22,31 +23,12 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 		.withOutput("Output", AudioChannelSet::stereo(), true)
 #endif
 	)
-	
-	//treeState(*this, nullptr, Identifier("PARAMETERS"), { std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", 0.0f, 1.0f, 0.5f),
-		//std::make_unique<AudioParameterFloat>("distortionType_", "Distortion Type", StringArray("hardclipping", "softclipping", "softclipping_exponential", "fullwave_rec", "halfwave_rec"), 0) })
-		
-	//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier"),
-		//	std::make_unique<AudioParameterChoice>("inputGain", "Distortion Type:", StringArray("Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier"), 0))) })
-	
-		
+			
 #endif
 {
 	state = new AudioProcessorValueTreeState(*this, nullptr);
-
-	addParameter(inputGain = new AudioParameterFloat("inputGain", "Input Gain", NormalisableRange<float>(0.0f, 10.0f), 5.0f));
-
-	addParameter(comboChoice = new AudioParameterChoice("distortionType_",
-		"Distortion Type:", { "Select one", "Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier" }, 0));
-}
 	
-
-
-   
-    
-    
-
-
+	 }
 
 SpectralDistortionAudioProcessor::~SpectralDistortionAudioProcessor()
 {
@@ -119,10 +101,13 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
 	previousGain = *inputGain;
 	dsp::ProcessSpec spec;
 
 	
+
+
 
 }
 
@@ -156,8 +141,9 @@ bool SpectralDistortionAudioProcessor::isBusesLayoutSupported (const BusesLayout
 }
 #endif
 
-void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
+
 	ScopedNoDenormals noDenormals;
 	auto totalNumInputChannels = getTotalNumInputChannels();
 	auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -173,14 +159,27 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 
 
 
-	// In case we have more outputs than inputs, this code clears any output
-	// channels that didn't contain input data, (because these aren't
-	// guaranteed to be empty - they may contain garbage).
-	// This is here to avoid people getting screaming feedback
-	// when they first compile a plugin, but obviously you don't need to keep
-	// this code if your algorithm always overwrites all the output channels.
-	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-		buffer.clear(i, 0, buffer.getNumSamples());
+
+
+    // In case we have more outputs than inputs, this code clears any output
+    // channels that didn't contain input data, (because these aren't
+    // guaranteed to be empty - they may contain garbage).
+    // This is here to avoid people getting screaming feedback
+    // when they first compile a plugin, but obviously you don't need to keep
+    // this code if your algorithm always overwrites all the output channels.
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+        buffer.clear (i, 0, buffer.getNumSamples());
+
+    // This is the place where you'd normally do the guts of your plugin's
+    // audio processing...
+    // Make sure to reset the state if your inner loop is processing
+    // the samples and the outer loop is handling the channels.
+    // Alternatively, you can process the samples with the channels
+    // interleaved by keeping the same state.
+    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    {
+        auto* channelData = buffer.getWritePointer (channel);
+
 
 
 		
@@ -263,6 +262,10 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	}
 	}
 	
+
+        // ..do something to the data...
+    }
+
 }
 
 AudioProcessorValueTreeState& SpectralDistortionAudioProcessor:: getState() {
@@ -278,7 +281,11 @@ bool SpectralDistortionAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* SpectralDistortionAudioProcessor::createEditor()
 {
+
 	return new SpectralDistortionAudioProcessorEditor(*this);
+
+    return new SpectralDistortionAudioProcessorEditor (*this);
+
 }
 
 //==============================================================================
@@ -287,20 +294,12 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-	MemoryOutputStream stream(destData, true);
-	stream.writeFloat(*inputGain);
-	stream.writeInt(*comboChoice);
-	//stream.writeInt(*comboChoice);
 }
 
 void SpectralDistortionAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-	MemoryInputStream stream(data, static_cast<size_t> (sizeInBytes), false);
-	inputGain->setValueNotifyingHost(inputGain->getNormalisableRange().convertTo0to1(stream.readFloat()));
-	comboChoice->setValueNotifyingHost(comboChoice->getNormalisableRange().convertTo0to1(stream.readInt()));
-	//comboChoice->setValueNotifyingHost(comboChoice->getNormalisableRange().convertTo0to1(stream.readInt()));
 }
 
 //==============================================================================
@@ -309,4 +308,6 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new SpectralDistortionAudioProcessor();
 }
+
+
 
