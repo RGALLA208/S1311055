@@ -19,7 +19,7 @@
 class SpectralDistortionAudioProcessorEditor  : public AudioProcessorEditor
 {
 public:
-    SpectralDistortionAudioProcessorEditor (SpectralDistortionAudioProcessor&, AudioProcessorValueTreeState&);
+    SpectralDistortionAudioProcessorEditor (SpectralDistortionAudioProcessor&);
     ~SpectralDistortionAudioProcessorEditor();
 
     //==============================================================================
@@ -30,16 +30,22 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     SpectralDistortionAudioProcessor& processor;
-    AudioProcessorValueTreeState& treeState;
+   
+    ScopedPointer<Slider> driveKnob;
+    ScopedPointer<Slider> rangeKnob;
+    ScopedPointer<Slider> wetKnob;
+    ScopedPointer<Slider> volumeKnob;
+    
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> driveAttatchment;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> rangeAttatchment;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> wetAttatchment;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> volumeAttatchment;
+    
 
-    Slider cutoffDial;
-    Slider resonanceDial;
+    Slider inGainDial;
     Slider driveDial;
-    ComboBox modeSel;
-    std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> cutoffValue;
-    std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> resonanceValue;
-    std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> driveValue;
-    std::unique_ptr <AudioProcessorValueTreeState::ComboBoxAttachment> modeChoice;
+    ComboBox distortionSel;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessorEditor)
 };

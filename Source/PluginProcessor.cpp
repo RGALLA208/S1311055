@@ -21,22 +21,19 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 		.withOutput("Output", AudioChannelSet::stereo(), true)
 #endif
-	), treeState(*this, nullptr, Identifier("PARAMETERS"), { std::make_unique<AudioParameterFloat>("cutoff", "Cutoff", 20.0f, 20000.0f, 20000.0f),
-		std::make_unique<AudioParameterFloat>("resonance", "Resonance", 0.0f, 1.10f, 0.15f),
-		 std::make_unique<AudioParameterFloat>("drive", "Drive", 1.0f, 25.0f, 1.0f),
-		 std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("LPF12", "LPF24", "HPF12", "HPF24"), 0) })
-		//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier"),
+	)
+	
+	//treeState(*this, nullptr, Identifier("PARAMETERS"), { std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", 0.0f, 1.0f, 0.5f),
+		//std::make_unique<AudioParameterFloat>("distortionType_", "Distortion Type", StringArray("hardclipping", "softclipping", "softclipping_exponential", "fullwave_rec", "halfwave_rec"), 0) })
+		
+	//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier"),
 		//	std::make_unique<AudioParameterChoice>("inputGain", "Distortion Type:", StringArray("Hard Clip", "Soft Clip", "Soft Clip Exponential", "Full-wave Rectifier", "Half-Wave Rectifier"), 0))) })
 	
 		
 #endif
 {
-	const StringArray params = { "cutoff", "resonance", "drive", "mode" };
-	for (int i = 0; i <= 3; ++i)
-	{
-		// adds a listener to each parameter in the array.
-		treeState.addParameterListener(params[i], this);
-	}
+	state = new AudioProcessorValueTreeState(*this, nullptr);
+
 	addParameter(inputGain = new AudioParameterFloat("inputGain", "Input Gain", NormalisableRange<float>(0.0f, 10.0f), 5.0f));
 
 	addParameter(comboChoice = new AudioParameterChoice("distortionType_",
@@ -124,12 +121,8 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
     // initialisation that you need..
 	previousGain = *inputGain;
 	dsp::ProcessSpec spec;
-	spec.sampleRate = sampleRate;
-	spec.maximumBlockSize = samplesPerBlock;
-	spec.numChannels = getTotalNumOutputChannels();
-	ladderFilter.reset();
-	ladderFilter.prepare(spec);
-	ladderFilter.setEnabled(true);
+
+	
 
 }
 
@@ -172,7 +165,7 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	float* channelData; //Array of samples, length numSamples
 	
 
-	//float inputGainDecibels_; //Gain in decibels, controlled by the user
+	float inputGainDecibels_; //Gain in decibels, controlled by the user
 	
 
 	//Calculate input gain once to save calculations
@@ -189,9 +182,6 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 
-	juce::dsp::AudioBlock<float> block(buffer);
-	auto processingContext = dsp::ProcessContextReplacing<float>(block);
-	ladderFilter.process(processingContext);
 
 		
 	// This is the place where you'd normally do the guts of your plugin's
@@ -275,6 +265,11 @@ void SpectralDistortionAudioProcessor::processBlock(AudioBuffer<float>& buffer, 
 	
 }
 
+AudioProcessorValueTreeState& SpectralDistortionAudioProcessor:: getState() {
+
+	return *state;
+}
+
 //==============================================================================
 bool SpectralDistortionAudioProcessor::hasEditor() const
 {
@@ -283,7 +278,7 @@ bool SpectralDistortionAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* SpectralDistortionAudioProcessor::createEditor()
 {
-	return new SpectralDistortionAudioProcessorEditor(*this, treeState);
+	return new SpectralDistortionAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -315,6 +310,3 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new SpectralDistortionAudioProcessor();
 }
 
-void SpectralDistortionAudioProcessor::parameterChanged(const String& parameterID, float newValue)
-{
-}
