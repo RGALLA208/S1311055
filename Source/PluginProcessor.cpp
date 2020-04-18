@@ -23,7 +23,7 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 		.withOutput("Output", AudioChannelSet::stereo(), true)
 #endif
 	)
-			
+
 #endif
 {
 	state = new AudioProcessorValueTreeState(*this, nullptr);
@@ -31,13 +31,15 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 	state->createAndAddParameter("drive", "Drive", "Drive", NormalisableRange<float>(0.f, 1.f, 0.001), 1.0, nullptr, nullptr);
 	state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.f, 3000, 1), 1.0, nullptr, nullptr);
 	state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.f, 1.f, 0.001), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("volume", "Volume", "Volume",  NormalisableRange<float>(0.f, 3.f, 0.001), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("volume", "Volume", "Volume", NormalisableRange<float>(0.f, 3.f, 0.001), 1.0, nullptr, nullptr);
+	std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("arcTan", "Hard Clipping", "Soft Clipping",
+		"Soft Clipping Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0);
 
 	state->state = ValueTree("drive");
 	state->state = ValueTree("range");
 	state->state = ValueTree("wet");
 	state->state = ValueTree("volume");
-
+	state->state = ValueTree("distortionType_");
 
  }
 
@@ -192,86 +194,85 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 	float range = *state->getRawParameterValue("range");
 	float wet = *state->getRawParameterValue("wet");
 	float volume = *state->getRawParameterValue("volume");
-
+	auto distortionType_ = *state->getRawParameterValue("distortionType_");
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
 		auto currentGain = (inputGain->get()); //Get Input Gain Value
-		auto distortionType_ = comboChoice->getIndex();
+		//auto distortionType_ = comboChoice->getIndex();
 
 		// ..do something to the data...
 			for (int i = 0; i < numSamples; ++i) {
 
 		auto in = channelData[i];
-		
-
 		float cleanSignal = in;
 
+		in = drive * range;
 
-		if (currentGain == previousGain)
-		{
-			buffer.applyGain(currentGain);
-		}
-		else
-		{
-			buffer.applyGainRamp(0, buffer.getNumSamples(), previousGain, currentGain);
-			previousGain = currentGain;
-		}
+		in = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
 
-		if (distortionType_ == 0) { // TestFunction
+		//if (currentGain == previousGain)
+		//{
+		//	buffer.applyGain(currentGain);
+		//}
+		//else
+		//{
+		//	buffer.applyGainRamp(0, buffer.getNumSamples(), previousGain, currentGain);
+		//	previousGain = currentGain;
+		//}
+
+		//if (distortionType_ == 0) { // TestFunction
 		
-			in = drive * range;
-
-				in = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
 			
-		}
-
-		if (distortionType_ == 1) { // HardClipping
-			float threshold = 1.0f; // Thresh1 = 1.0
-
-			if (in > threshold)
-				in = threshold;
-			else if (in < -threshold)
-				in = -threshold;
-			else
-				in = in;
-		}
-		else if (distortionType_ == 2) { //SoftClipping
-			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
-			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
-			if (in > threshold2)
-				in = 1.0f;
-			else if (in > threshold1)
-				in = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
-			else if (in < -threshold2)
-				in = -1.0f;
-			else if (in < -threshold1)
-				in = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
-			else
-				in = 2.0f* in;
-		}
-		else if (distortionType_ == 3) //SoftClipping exponential
-		{
-			if (in > 0) 
-				in = 1.0f - expf(-in);
-			else
-				in = -1.0f + expf(in);
 			
-		}
-		else if (distortionType_ == 4) { // Full-wave rectifier (absolute value)
+		//}
 
-			in = fabsf(in);
-		}
-		else if (distortionType_ == 5) { // Half-wave rectifier (absolute value)
+		//if (distortionType_ == 1) { // HardClipping
+			//float threshold = 1.0f; // Thresh1 = 1.0
 
-			if (in > 0)
-				in = in;
-			else
-				in = 0;
-		}
+		//	if (in > threshold)
+		//		in = threshold;
+		//	else if (in < -threshold)
+		//		in = -threshold;
+		//	else
+		//		in = in;
+	//	}
+	//	else if (distortionType_ == 2) { //SoftClipping
+	//		float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
+	//		float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
+	//		if (in > threshold2)
+	//			in = 1.0f;
+	//		else if (in > threshold1)
+	//			in = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
+	//		else if (in < -threshold2)
+	//			in = -1.0f;
+	//		else if (in < -threshold1)
+	//			in = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
+	//		else
+	//			in = 2.0f* in;
+	//	}
+	//	else if (distortionType_ == 3) //SoftClipping exponential
+	//	{
+	//		if (in > 0) 
+	//			in = 1.0f - expf(-in);
+	//		else
+	//			in = -1.0f + expf(in);
+	//
+	//	}
+	//	else if (distortionType_ == 4) { // Full-wave rectifier (absolute value)
+
+//			in = fabsf(in);
+//		}
+//		else if (distortionType_ == 5) { // Half-wave rectifier (absolute value)
+//
+//			if (in > 0)
+//				in = in;
+//			else
+//				in = 0;
+//		}
 		//Put output back in buffer
-		channelData[i] = in;
+//		channelData[i] = in;
 	}
 	}
 	

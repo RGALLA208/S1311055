@@ -35,10 +35,14 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     volumeKnob->setSliderStyle(Slider::Rotary);
     volumeKnob->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
 
+    //addAndMakeVisible((DistortionType) = new ComboBox("Distortion"));
+    
+
     driveAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "drive" , *driveKnob);
     rangeAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "range", *rangeKnob);
     wetAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "wet", *wetKnob);
     volumeAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "volume", *volumeKnob);
+    //DistortionAttatchment = new AudioProcessorValueTreeState::ComboBoxAttachment(p.getState(), "distortion", *DistortionType);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -68,7 +72,8 @@ void SpectralDistortionAudioProcessorEditor::paint (Graphics& g)
     g.drawText("Range", ((getWidth() / 5 * 2) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false);
     g.drawText("Wet", ((getWidth() / 5 * 3) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false);
     g.drawText("Volume", ((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false);
-   
+    //g.drawText("Distortion  Type", ((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 2)) + 5, 100, 100, Justification::centred, false);
+
 }
 
 void SpectralDistortionAudioProcessorEditor::resized()
@@ -81,7 +86,8 @@ void SpectralDistortionAudioProcessorEditor::resized()
     rangeKnob->setBounds(((getWidth() / 5 * 2) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
     wetKnob->setBounds(((getWidth() / 5 * 3) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
     volumeKnob->setBounds(((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
-	
+	//DistortionType-> setBounds(((getWidth() / 5 * 5) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
+   
 
 
 }

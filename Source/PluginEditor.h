@@ -36,11 +36,13 @@ private:
     ScopedPointer<Slider> rangeKnob;
     ScopedPointer<Slider> wetKnob;
     ScopedPointer<Slider> volumeKnob;
+    //ScopedPointer<ComboBox> DistortionType;
     
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> driveAttatchment;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> rangeAttatchment;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> wetAttatchment;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> volumeAttatchment;
+    //ScopedPointer<AudioProcessorValueTreeState::ComboBoxAttachment> DistortionAttatchment;
     
 
     Slider inGainDial;
