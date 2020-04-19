@@ -30,8 +30,6 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     SpectralDistortionAudioProcessor& processor;
-
-   
     ScopedPointer<Slider> driveKnob;
     ScopedPointer<Slider> rangeKnob;
     ScopedPointer<Slider> wetKnob;
@@ -47,7 +45,7 @@ private:
 
    // Slider inGainDial;
     //Slider driveDial;
-   // ComboBox distortionSel;
+    ComboBox distortionSelect;
 
 
 

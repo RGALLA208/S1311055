@@ -58,11 +58,11 @@ public:
 
    
 
- 
+public:
     
     AudioProcessorValueTreeState& getState();
     //Parameters
-    AudioParameterFloat* inputGain;
+    //AudioParameterFloat* inputGain;
     float previousGain;
     AudioParameterChoice* comboChoice;
     
@@ -71,7 +71,7 @@ private:
     ScopedPointer<AudioProcessorValueTreeState> state;
     
   
-   dsp::LadderFilter<float> ladderFilter;
+   //dsp::LadderFilter<float> ladderFilter;
 
 
 private:

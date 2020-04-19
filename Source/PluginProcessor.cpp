@@ -26,7 +26,7 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 {
 	state = new AudioProcessorValueTreeState(*this, nullptr);
-
+	
 	state->createAndAddParameter("drive", "Drive", "Drive", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
 	state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.0f, 3000.f, 1), 1.0, nullptr, nullptr);
 	state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
@@ -34,13 +34,14 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 	//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("arcTan", "Hard Clipping", "Soft Clipping",
 		//"Soft Clipping Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0);
 
+	
 	state->state = ValueTree("drive");
 	state->state = ValueTree("range");
 	state->state = ValueTree("wet");
 	state->state = ValueTree("volume");
 	//state->state = ValueTree("distortionType_");
 
-	addParameter(comboChoice = new AudioParameterChoice("choice", "CLipping algorithm", { "Select one", "Test", "Hard Clipping", "Soft Clipping", "Soft Clipping Expo", "Full-Wave Rectifier", "Half-Wave Rectifier" }, 0));
+	addParameter(comboChoice = new AudioParameterChoice("choice", "Clipping algorithm", { "Select one", "Test", "Hard Clipping", "Soft Clipping", "Soft Clipping Expo", "Full-Wave Rectifier", "Half-Wave Rectifier" }, 0));
 
  }
 
@@ -117,7 +118,7 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
     // initialisation that you need..
 
 	//previousGain = *inputGain;
-	dsp::ProcessSpec spec;
+	//dsp::ProcessSpec spec;
 
 	
 
@@ -191,6 +192,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
 
+
 	float drive = *state->getRawParameterValue("drive");
 	float range = *state->getRawParameterValue("range");
 	float wet = *state->getRawParameterValue("wet");
@@ -199,18 +201,19 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        float* channelData = buffer.getWritePointer (channel);
+        auto* channelData = buffer.getWritePointer (channel);
 		//auto currentGain = (inputGain->get()); //Get Input Gain Value
 		//auto distortionType_ = comboChoice->getIndex();
 
 		// ..do something to the data...
 			for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
-		float in = channelData[i];
-		float cleanSignal = in;
+		auto in = channelData[i];
+		auto cleanSignal = in;
+		
+		//in = inGain * in;
 
-		//in = drive * range;
-		if (choice == 0) { // TestFunction
+		if (choice == 1) { // TestFunction
 		channelData[i] = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
 
 		//if (currentGain == previousGain)
@@ -229,17 +232,17 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			
 		}
 
-		if (choice == 1) { // HardClipping
+		if (choice == 2) { // HardClipping
 			float threshold = 1.0f; // Thresh1 = 1.0
 
 			if (in > threshold)
-				channelData[i] = threshold;
+				channelData[i] = (threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
 			else if (in < -threshold)
-				channelData[i] = -threshold;
+				channelData[i] = (-threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
 			else
-				channelData[i] = in;
+				channelData[i] = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);;
 		}
-		else if (choice == 2) { //SoftClipping
+		else if (choice == 3) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
 			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
 			if (in > threshold2)
@@ -253,7 +256,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			else
 				channelData[i] = 2.0f* in;
 		}
-		else if (choice == 3) //SoftClipping exponential
+		else if (choice == 4) //SoftClipping exponential
 		{
 			if (in > 0) 
 				channelData[i] = 1.0f - expf(-in);
@@ -261,11 +264,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				channelData[i] = -1.0f + expf(in);
 	
 		}
-		else if (choice) { // Full-wave rectifier (absolute value)
+		else if (choice == 5) { // Full-wave rectifier (absolute value)
 
 			channelData[i] = fabsf(in);
 		}
-		else if (choice) { // Half-wave rectifier (absolute value)
+		else if (choice == 6) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
 				channelData[i] = in;
@@ -295,7 +298,7 @@ bool SpectralDistortionAudioProcessor::hasEditor() const
 AudioProcessorEditor* SpectralDistortionAudioProcessor::createEditor()
 {
 
-	return new SpectralDistortionAudioProcessorEditor(*this);
+	return new SpectralDistortionAudioProcessorEditor( *this);
 
 
 }
