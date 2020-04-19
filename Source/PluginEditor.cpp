@@ -63,10 +63,10 @@ void SpectralDistortionAudioProcessorEditor::paint (Graphics& g)
     g.setColour(Colours::white);
     g.setFont(15.0f);
  
-    g.drawFittedText("Drive", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Range", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Wet", ((getWidth() / 5) * 4) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Volume", ((getWidth() / 5 ) * 5) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Drive", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Range", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Wet", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Volume", ((getWidth() / 5 ) * 4) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
 
    // g.drawText("Distortion  Type", ((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 2)), 100, 100, Justification::centred, `);
 
