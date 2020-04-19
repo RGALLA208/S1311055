@@ -58,23 +58,19 @@ public:
 
    
 
-    //int SpectralDistortionAudioProcessor:signum(float x)
-	
-
-
-public:
+ 
     
     AudioProcessorValueTreeState& getState();
     //Parameters
-   
+    AudioParameterFloat* inputGain;
+    float previousGain;
+    AudioParameterChoice* comboChoice;
     
 private:
     //==============================================================================
     ScopedPointer<AudioProcessorValueTreeState> state;
     
-    AudioParameterFloat* inputGain;
-    float previousGain;
-    AudioParameterChoice* comboChoice;
+  
    dsp::LadderFilter<float> ladderFilter;
 
 

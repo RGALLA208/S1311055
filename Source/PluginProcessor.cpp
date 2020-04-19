@@ -14,8 +14,7 @@
 //==============================================================================
 SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-
-	: AudioProcessor(BusesProperties()
+       : AudioProcessor(BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
 		.withInput("Input", AudioChannelSet::stereo(), true)
@@ -28,18 +27,20 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 {
 	state = new AudioProcessorValueTreeState(*this, nullptr);
 
-	state->createAndAddParameter("drive", "Drive", "Drive", NormalisableRange<float>(0.f, 1.f, 0.001), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.f, 3000, 1), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.f, 1.f, 0.001), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("volume", "Volume", "Volume", NormalisableRange<float>(0.f, 3.f, 0.001), 1.0, nullptr, nullptr);
-	std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("arcTan", "Hard Clipping", "Soft Clipping",
-		"Soft Clipping Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0);
+	state->createAndAddParameter("drive", "Drive", "Drive", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.0f, 3000.f, 1), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("volume", "Volume", "Volume", NormalisableRange<float>(0.f, 3.0f, 0.001), 1.0, nullptr, nullptr);
+	//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("arcTan", "Hard Clipping", "Soft Clipping",
+		//"Soft Clipping Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0);
 
 	state->state = ValueTree("drive");
 	state->state = ValueTree("range");
 	state->state = ValueTree("wet");
 	state->state = ValueTree("volume");
-	state->state = ValueTree("distortionType_");
+	//state->state = ValueTree("distortionType_");
+
+	addParameter(comboChoice = new AudioParameterChoice("choice", "CLipping algorithm", { "Select one", "Test", "Hard Clipping", "Soft Clipping", "Soft Clipping Expo", "Full-Wave Rectifier", "Half-Wave Rectifier" }, 0));
 
  }
 
@@ -115,7 +116,7 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
-	previousGain = *inputGain;
+	//previousGain = *inputGain;
 	dsp::ProcessSpec spec;
 
 	
@@ -160,11 +161,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 	ScopedNoDenormals noDenormals;
 	auto totalNumInputChannels = getTotalNumInputChannels();
 	auto totalNumOutputChannels = getTotalNumOutputChannels();
-	int numSamples; // Number of audio samples to process
-	float* channelData; //Array of samples, length numSamples
+	//int numSamples; // Number of audio samples to process
+	//float* channelData; //Array of samples, length numSamples
 	
 
-	float inputGainDecibels_; //Gain in decibels, controlled by the user
+	//float inputGainDecibels_; //Gain in decibels, controlled by the user
 	
 
 	//Calculate input gain once to save calculations
@@ -194,95 +195,93 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 	float range = *state->getRawParameterValue("range");
 	float wet = *state->getRawParameterValue("wet");
 	float volume = *state->getRawParameterValue("volume");
-	auto distortionType_ = *state->getRawParameterValue("distortionType_");
+	auto choice = comboChoice->getIndex();
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-		auto currentGain = (inputGain->get()); //Get Input Gain Value
+        float* channelData = buffer.getWritePointer (channel);
+		//auto currentGain = (inputGain->get()); //Get Input Gain Value
 		//auto distortionType_ = comboChoice->getIndex();
 
 		// ..do something to the data...
-			for (int i = 0; i < numSamples; ++i) {
+			for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
-		auto in = channelData[i];
+		float in = channelData[i];
 		float cleanSignal = in;
 
 		//in = drive * range;
-
+		if (choice == 0) { // TestFunction
 		channelData[i] = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
 
 		//if (currentGain == previousGain)
 		//{
 		//	buffer.applyGain(currentGain);
 		//}
-		//else
+	//else
 		//{
 		//	buffer.applyGainRamp(0, buffer.getNumSamples(), previousGain, currentGain);
-		//	previousGain = currentGain;
-		//}
+	//		previousGain = currentGain;
+	//}
 
-		//if (distortionType_ == 0) { // TestFunction
+	
 		
 			
 			
-		//}
+		}
 
-		//if (distortionType_ == 1) { // HardClipping
-			//float threshold = 1.0f; // Thresh1 = 1.0
+		if (choice == 1) { // HardClipping
+			float threshold = 1.0f; // Thresh1 = 1.0
 
-		//	if (in > threshold)
-		//		channelData[i] = threshold;
-		//	else if (in < -threshold)
-		//		channelData[i] = -threshold;
-		//	else
-		//		channelData[i] = in;
-	//	}
-	//	else if (distortionType_ == 2) { //SoftClipping
-	//		float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
-	//		float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
-	//		if (in > threshold2)
-	//			channelData[i] = 1.0f;
-	//		else if (in > threshold1)
-	//			channelData[i] = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
-	//		else if (in < -threshold2)
-	//			channelData[i] = -1.0f;
-	//		else if (in < -threshold1)
-	//			channelData[i] = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
-	//		else
-	//			channelData[i] = 2.0f* in;
-	//	}
-	//	else if (distortionType_ == 3) //SoftClipping exponential
-	//	{
-	//		if (in > 0) 
-	//			channelData[i] = 1.0f - expf(-in);
-	//		else
-	//			channelData[i] = -1.0f + expf(in);
-	//
-	//	}
-	//	else if (distortionType_ == 4) { // Full-wave rectifier (absolute value)
+			if (in > threshold)
+				channelData[i] = threshold;
+			else if (in < -threshold)
+				channelData[i] = -threshold;
+			else
+				channelData[i] = in;
+		}
+		else if (choice == 2) { //SoftClipping
+			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
+			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
+			if (in > threshold2)
+				channelData[i] = 1.0f;
+			else if (in > threshold1)
+				channelData[i] = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
+			else if (in < -threshold2)
+				channelData[i] = -1.0f;
+			else if (in < -threshold1)
+				channelData[i] = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
+			else
+				channelData[i] = 2.0f* in;
+		}
+		else if (choice == 3) //SoftClipping exponential
+		{
+			if (in > 0) 
+				channelData[i] = 1.0f - expf(-in);
+			else
+				channelData[i] = -1.0f + expf(in);
+	
+		}
+		else if (choice) { // Full-wave rectifier (absolute value)
 
-//			channelData[i] = fabsf(in);
-//		}
-//		else if (distortionType_ == 5) { // Half-wave rectifier (absolute value)
-//
-//			if (in > 0)
-//				channelData[i] = in;
-//			else
-//				channelData[i] = 0;
-//		}
+			channelData[i] = fabsf(in);
+		}
+		else if (choice) { // Half-wave rectifier (absolute value)
+
+			if (in > 0)
+				channelData[i] = in;
+			else
+				channelData[i] = 0;
+		}
 		//Put output back in buffer
-//		channelData[i] = in;
+		//channelData[i] = in;
 	}
 	}
 	
-
-        // ..do something to the data...
     }
 
 
 
-AudioProcessorValueTreeState& SpectralDistortionAudioProcessor:: getState() {
+AudioProcessorValueTreeState& SpectralDistortionAudioProcessor::getState() {
 
 	return *state;
 }
@@ -308,7 +307,7 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 
-	MemoryOutputStream stream(destData, false);
+	MemoryOutputStream stream(destData, true);
 	state->state.writeToStream(stream);
 
 
