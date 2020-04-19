@@ -42,7 +42,7 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 	//state->state = ValueTree("distortionType_");
 
 	addParameter(comboChoice = new AudioParameterChoice("choice", "Clipping algorithm", { "Select one", "Test", "Hard Clipping", "Soft Clipping", "Soft Clipping Expo", "Full-Wave Rectifier", "Half-Wave Rectifier" }, 0));
-
+	//addParameter(inputGain = new AudioParameterFloat("inGain", "Input Gain", <float>0.0f, 1.0f, 0.5f));
  }
 
 SpectralDistortionAudioProcessor::~SpectralDistortionAudioProcessor()
@@ -198,6 +198,13 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 	float wet = *state->getRawParameterValue("wet");
 	float volume = *state->getRawParameterValue("volume");
 	auto choice = comboChoice->getIndex();
+	float inputGain;
+
+	float inputGainDecibels_;
+		
+		inputGain = powf(10.0f, inputGainDecibels_ / 20.0f); // Input Gain in Decibels (USER CONTROLLED)
+
+	
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
@@ -208,13 +215,14 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		// ..do something to the data...
 			for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
-		auto in = channelData[i];
+		const float in = channelData[i] * inputGain;
 		auto cleanSignal = in;
+		float out;
 		
 		//in = inGain * in;
 
 		if (choice == 1) { // TestFunction
-		channelData[i] = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
+		out = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
 
 		//if (currentGain == previousGain)
 		//{
@@ -236,47 +244,47 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			float threshold = 1.0f; // Thresh1 = 1.0
 
 			if (in > threshold)
-				channelData[i] = (threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
+				out = (threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
 			else if (in < -threshold)
-				channelData[i] = (-threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
+				out = (-threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
 			else
-				channelData[i] = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);;
+				out = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);;
 		}
 		else if (choice == 3) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
 			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
 			if (in > threshold2)
-				channelData[i] = 1.0f;
+				out = 1.0f;
 			else if (in > threshold1)
-				channelData[i] = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
+				out = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
 			else if (in < -threshold2)
-				channelData[i] = -1.0f;
+				out = -1.0f;
 			else if (in < -threshold1)
-				channelData[i] = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
+				out = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
 			else
-				channelData[i] = 2.0f* in;
+				out = 2.0f* in;
 		}
 		else if (choice == 4) //SoftClipping exponential
 		{
 			if (in > 0) 
-				channelData[i] = 1.0f - expf(-in);
+				out = 1.0f - expf(-in);
 			else
-				channelData[i] = -1.0f + expf(in);
+				out = -1.0f + expf(in);
 	
 		}
 		else if (choice == 5) { // Full-wave rectifier (absolute value)
 
-			channelData[i] = fabsf(in);
+			out = fabsf(in);
 		}
 		else if (choice == 6) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
-				channelData[i] = in;
+				out = in;
 			else
-				channelData[i] = 0;
+				out = 0;
 		}
 		//Put output back in buffer
-		//channelData[i] = in;
+		channelData[i] = out;
 	}
 	}
 	

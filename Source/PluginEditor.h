@@ -46,6 +46,7 @@ private:
    // Slider inGainDial;
     //Slider driveDial;
     ComboBox distortionSelect;
+    Slider inputGain;
 
 
 

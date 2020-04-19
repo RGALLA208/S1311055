@@ -65,7 +65,8 @@ public:
     //AudioParameterFloat* inputGain;
     float previousGain;
     AudioParameterChoice* comboChoice;
-    
+    AudioParameterFloat* inputGain;
+
 private:
     //==============================================================================
     ScopedPointer<AudioProcessorValueTreeState> state;
