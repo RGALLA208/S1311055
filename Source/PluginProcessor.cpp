@@ -208,9 +208,9 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		auto in = channelData[i];
 		float cleanSignal = in;
 
-		in = drive * range;
+		//in = drive * range;
 
-		in = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
+		channelData[i] = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
 
 		//if (currentGain == previousGain)
 		//{
@@ -232,44 +232,44 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			//float threshold = 1.0f; // Thresh1 = 1.0
 
 		//	if (in > threshold)
-		//		in = threshold;
+		//		channelData[i] = threshold;
 		//	else if (in < -threshold)
-		//		in = -threshold;
+		//		channelData[i] = -threshold;
 		//	else
-		//		in = in;
+		//		channelData[i] = in;
 	//	}
 	//	else if (distortionType_ == 2) { //SoftClipping
 	//		float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
 	//		float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
 	//		if (in > threshold2)
-	//			in = 1.0f;
+	//			channelData[i] = 1.0f;
 	//		else if (in > threshold1)
-	//			in = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
+	//			channelData[i] = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
 	//		else if (in < -threshold2)
-	//			in = -1.0f;
+	//			channelData[i] = -1.0f;
 	//		else if (in < -threshold1)
-	//			in = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
+	//			channelData[i] = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
 	//		else
-	//			in = 2.0f* in;
+	//			channelData[i] = 2.0f* in;
 	//	}
 	//	else if (distortionType_ == 3) //SoftClipping exponential
 	//	{
 	//		if (in > 0) 
-	//			in = 1.0f - expf(-in);
+	//			channelData[i] = 1.0f - expf(-in);
 	//		else
-	//			in = -1.0f + expf(in);
+	//			channelData[i] = -1.0f + expf(in);
 	//
 	//	}
 	//	else if (distortionType_ == 4) { // Full-wave rectifier (absolute value)
 
-//			in = fabsf(in);
+//			channelData[i] = fabsf(in);
 //		}
 //		else if (distortionType_ == 5) { // Half-wave rectifier (absolute value)
 //
 //			if (in > 0)
-//				in = in;
+//				channelData[i] = in;
 //			else
-//				in = 0;
+//				channelData[i] = 0;
 //		}
 		//Put output back in buffer
 //		channelData[i] = in;
@@ -298,7 +298,6 @@ AudioProcessorEditor* SpectralDistortionAudioProcessor::createEditor()
 
 	return new SpectralDistortionAudioProcessorEditor(*this);
 
-    return new SpectralDistortionAudioProcessorEditor (*this);
 
 }
 
