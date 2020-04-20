@@ -18,7 +18,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     : AudioProcessorEditor (&p), processor (p), treeState(vts)
 
 {
-
+    //==================================================PARAMETERS======================================================
     // inputGain
     inputGainValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
         "inputGain", inputGainDial);
@@ -50,9 +50,25 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     distortionSel.addItem("Hard Clip", 2);
     distortionSel.addItem("Soft Clip", 3);
     distortionSel.addItem("Soft Clip Exponential", 4);
-    distortionSel.addItem("FUll-Wave Rectifier", 5);
+    distortionSel.addItem("Full-Wave Rectifier", 5);
     distortionSel.addItem("Half-Wave Rectifier", 6);
     addAndMakeVisible(&distortionSel);
+
+
+    // ==============================================FILTERS==============================================================
+    filterCutoffValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
+        "filterCutoff", filterCutoffDial);
+    filterCutoffDial.setSliderStyle(Slider::RotaryVerticalDrag);
+    filterCutoffDial.setRange(0.0f, 1.10f, 0.0f);
+    filterCutoffDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    addAndMakeVisible(&filterCutoffDial);
+
+    filterResonanceValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
+        "filterResonance", filterResonanceDial);
+    filterResonanceDial.setSliderStyle(Slider::RotaryVerticalDrag);
+    filterResonanceDial.setRange(0.0f, 1.10f, 0.0f);
+    filterResonanceDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    addAndMakeVisible(&filterResonanceDial);
 
 
  //   addAndMakeVisible((inputGainKnob) = new Slider("Input Gain"));
@@ -82,7 +98,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
 
-setSize(1000, 1000);
+setSize(500, 300);
    
 
 }
@@ -99,19 +115,21 @@ void SpectralDistortionAudioProcessorEditor::paint (Graphics& g)
    // g.setColour(Colours::white);
    // g.setFont(15.0f);
  
-    g.fillAll(Colours::antiquewhite);
+    g.fillAll(Colours::lightcoral);
     g.setColour(Colours::black);
+    
     // Title Text
     g.setFont(30);
-    g.drawFittedText("Distortion", 10, 20, 210, 10, Justification::centred, 1, 0.0f);
-    // Frequnecy, Resonance & Drive labels
+    g.drawFittedText("Distortion", 500, 0, 210, 10, Justification::centred, 1, 0.0f);
+    // Parameter Labels 
     g.setFont(25);
-    g.drawFittedText("Input Gain", 55, 85, 10, 10, Justification::centred, 1, 0.0f);
-    g.drawFittedText("Wet", 165, 85, 10, 10, Justification::centred, 1, 0.0f);
-    g.drawFittedText("Output Gain", 55, 175, 12, 12, Justification::centred, 1, 0.0f);
-    
-    
-    
+    g.drawFittedText("Input Gain", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.8), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Wet", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.8), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Output Gain", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.8), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Tone", ((getWidth() / 5) * 1.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Resonance", ((getWidth() / 5) * 2.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
+
+
     //g.drawFittedText("Input Gain", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
     //g.drawFittedText("Range", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
     //g.drawFittedText("Wet", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
@@ -125,11 +143,15 @@ void SpectralDistortionAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    inputGainDial.setBounds(10, 40, 100, 100);
-    wetDial.setBounds(120, 40, 100, 100);
-    outGainDial.setBounds(10, 130, 100, 100);
-    distortionSel.setBounds(127.5, 19.5, 75, 25);
 
+    inputGainDial.setBounds(((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
+    wetDial.setBounds(((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
+    outGainDial.setBounds(((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
+    distortionSel.setBounds(((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 1.8) - (100 / 2)), 100, 100);
+
+
+    filterCutoffDial.setBounds(((getWidth() / 5) * 1.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
+    filterResonanceDial.setBounds(((getWidth() / 5) * 2.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
 
 
     //inputGainKnob->setBounds(((getWidth() / 5) * 1) - (100 / 2),(getHeight() / 2) - (100 / 2), 100, 100);
