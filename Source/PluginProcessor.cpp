@@ -24,10 +24,13 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 	), treeState(*this, nullptr, Identifier("PARAMETERS"),
 		{
 			std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -48.0f, 0.0f, -15.0f),
-				std::make_unique<AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.001f),
-				std::make_unique<AudioParameterFloat>("outGain", "Output Gain", 0.f, 3.0f, 0.01f),
-				std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",
-					"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0) })
+			std::make_unique<AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.001f),
+			std::make_unique<AudioParameterFloat>("outGain", "Output Gain", 0.f, 3.0f, 0.01f),
+			std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",
+					"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0),
+			std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff",  20.0f, 20000.0f, 20000.0f),
+			std::make_unique<AudioParameterFloat>("filterResonance", "Filter Resonance",  0.0f, 1.10f, 0.15f)
+		})
 
 
 
@@ -230,18 +233,13 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 	float wet = *treeState.getRawParameterValue("wet");
 	float outGain = *treeState.getRawParameterValue("outGain");
 	int distortionSelect = *treeState.getRawParameterValue("distortionSelect");
+	float LPcutoff = *treeState.getRawParameterValue("filterCutoff");
+	float LPresonance = *treeState.getRawParameterValue("filterResonance");
 
 	float inputGainDecibels_;
 	float outGainDecibels_;
 	
-
-
-	
-	
 	//float inputGainDecibels_ = powf(10.0f,inputGain / 20.0f); // Input Gain in Decibels (USER CONTROLLED)
-
-
-
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
@@ -260,6 +258,8 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		// =============TONE CONTROL USING CUTOFF VALUE OF LP FILTER=========
 		//====================================================================
 		
+
+
 		//in = inGain * in;
 
 		if (distortionSelect == 1) { // TestFunction
@@ -378,6 +378,10 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 void SpectralDistortionAudioProcessor::parameterChanged(const String& parameterID, float newValue)
 {
+	if (parameterID == "filtercutoff")
+		ladderFilter.setCutoffFrequencyHz(newValue);
+	else if (parameterID == "filterresonance")
+		ladderFilter.setResonance(newValue);
 
 }
 

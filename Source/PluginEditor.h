@@ -39,15 +39,19 @@ private:
     ComboBox distortionSel;
 
     //Filter
-    Slider FilterCutoffDial;
-    Slider FilterResonanceDial;
-    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> filterCutoffValue;
-    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> filterResonanceValue;
+    Slider filterCutoffDial;
+    Slider filterResonanceDial;
+
+
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> inputGainValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> wetValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> outGainValue;
     std::unique_ptr <AudioProcessorValueTreeState::ComboBoxAttachment> distortionSelectChoice;
+
+
+    std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterCutoffValue;
+    std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterResonanceValue;
 
 //    ScopedPointer<Slider> inputGainKnob;
   //  ScopedPointer<Slider> rangeKnob;
@@ -63,7 +67,7 @@ private:
     
 
    
-   // ComboBox distortionSelect;
+
   
 
 
