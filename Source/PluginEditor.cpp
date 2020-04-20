@@ -19,9 +19,9 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
 
 {
 
-    addAndMakeVisible((driveKnob) = new Slider("Drive"));
-    driveKnob->setSliderStyle(Slider::Rotary);
-    driveKnob ->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
+    addAndMakeVisible((inputGainKnob) = new Slider("Input Gain"));
+    inputGainKnob->setSliderStyle(Slider::Rotary);
+    inputGainKnob ->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
 
     addAndMakeVisible((rangeKnob) = new Slider("Range"));
     rangeKnob->setSliderStyle(Slider::Rotary);
@@ -31,16 +31,16 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     wetKnob->setSliderStyle(Slider::Rotary);
     wetKnob->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
 
-    addAndMakeVisible((volumeKnob) = new Slider("Volume"));
-    volumeKnob->setSliderStyle(Slider::Rotary);
-    volumeKnob->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
+    addAndMakeVisible((outGainKnob) = new Slider("Output Gain"));
+    outGainKnob->setSliderStyle(Slider::Rotary);
+    outGainKnob->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
 
     //addAndMakeVisible((DistortionType_) = new ComboBox("Distortion"));
     
-    driveAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "drive", *driveKnob);
+    inputGainAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "inputGain", *inputGainKnob);
     rangeAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "range", *rangeKnob);
     wetAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "wet", *wetKnob);
-    volumeAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "volume", *volumeKnob);
+    outGainAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "outGain", *outGainKnob);
     //DistortionAttatchment = new AudioProcessorValueTreeState::ComboBoxAttachment(p.getState(), "distortion", *DistortionType);
 
     // Make sure that before the constructor has finished, you've set the
@@ -63,10 +63,10 @@ void SpectralDistortionAudioProcessorEditor::paint (Graphics& g)
     g.setColour(Colours::white);
     g.setFont(15.0f);
  
-    g.drawFittedText("Drive", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Input Gain", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
     g.drawFittedText("Range", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
     g.drawFittedText("Wet", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Volume", ((getWidth() / 5 ) * 4) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Output Gain", ((getWidth() / 5 ) * 4) - (100 / 2), (getHeight() / 2), 100, 100, Justification::centred, 1);
 
    // g.drawText("Distortion  Type", ((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 2)), 100, 100, Justification::centred, `);
 
@@ -77,10 +77,10 @@ void SpectralDistortionAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 
-    driveKnob->setBounds(((getWidth() / 5) * 1) - (100 / 2),(getHeight() / 2) - (100 / 2), 100, 100);
+    inputGainKnob->setBounds(((getWidth() / 5) * 1) - (100 / 2),(getHeight() / 2) - (100 / 2), 100, 100);
     rangeKnob->setBounds(((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 2) - (100 / 2), 100, 100);
     wetKnob->setBounds(((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 2) - (100 / 2), 100, 100);
-    volumeKnob->setBounds(((getWidth() / 5) * 4) - (100 / 2), (getHeight() / 2) - (100 / 2), 100, 100);
+    outGainKnob->setBounds(((getWidth() / 5) * 4) - (100 / 2), (getHeight() / 2) - (100 / 2), 100, 100);
 	//DistortionType-> setBounds(((getWidth() / 5 * 5) - (100 / 2)), ((getHeight() / 2) - (100 / 2)), 100, 100);
    
 

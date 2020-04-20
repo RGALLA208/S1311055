@@ -30,23 +30,23 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     SpectralDistortionAudioProcessor& processor;
-    ScopedPointer<Slider> driveKnob;
+    ScopedPointer<Slider> inputGainKnob;
     ScopedPointer<Slider> rangeKnob;
     ScopedPointer<Slider> wetKnob;
-    ScopedPointer<Slider> volumeKnob;
+    ScopedPointer<Slider> outGainKnob;
    // ScopedPointer<ComboBox> DistortionType;
     
-    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> driveAttatchment;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> inputGainAttatchment;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> rangeAttatchment;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> wetAttatchment;
-    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> volumeAttatchment;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> outGainAttatchment;
    // ScopedPointer<AudioProcessorValueTreeState::ComboBoxAttachment> DistortionAttatchment;
     
 
    // Slider inGainDial;
     //Slider driveDial;
     ComboBox distortionSelect;
-    Slider inputGain;
+  
 
 
 

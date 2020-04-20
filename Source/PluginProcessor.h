@@ -65,7 +65,7 @@ public:
     //AudioParameterFloat* inputGain;
     float previousGain;
     AudioParameterChoice* comboChoice;
-    AudioParameterFloat* inputGain;
+   // AudioParameterFloat* inputGain;
 
 private:
     //==============================================================================

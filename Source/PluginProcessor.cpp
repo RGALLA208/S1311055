@@ -26,22 +26,23 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 {
 	state = new AudioProcessorValueTreeState(*this, nullptr);
+
 	
-	state->createAndAddParameter("drive", "Drive", "Drive", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("inputGain", "Input Gain", "Input Gain", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
 	state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.0f, 3000.f, 1), 1.0, nullptr, nullptr);
 	state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("volume", "Volume", "Volume", NormalisableRange<float>(0.f, 3.0f, 0.001), 1.0, nullptr, nullptr);
+	state->createAndAddParameter("outGain", "Output Gain", "Output Gain", NormalisableRange<float>(0.f, 3.0f, 0.001), 1.0, nullptr, nullptr);
 	//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("arcTan", "Hard Clipping", "Soft Clipping",
 		//"Soft Clipping Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0);
 
-	
-	state->state = ValueTree("drive");
+	state->state = ValueTree("inputGain");
 	state->state = ValueTree("range");
 	state->state = ValueTree("wet");
-	state->state = ValueTree("volume");
+	state->state = ValueTree("outGain");
 	//state->state = ValueTree("distortionType_");
 
 	addParameter(comboChoice = new AudioParameterChoice("choice", "Clipping algorithm", { "Select one", "Test", "Hard Clipping", "Soft Clipping", "Soft Clipping Expo", "Full-Wave Rectifier", "Half-Wave Rectifier" }, 0));
+	
 	//addParameter(inputGain = new AudioParameterFloat("inGain", "Input Gain", <float>0.0f, 1.0f, 0.5f));
  }
 
@@ -193,17 +194,20 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     // interleaved by keeping the same state.
 
 
-	float drive = *state->getRawParameterValue("drive");
+	float inputGain = *state->getRawParameterValue("inputGain");
 	float range = *state->getRawParameterValue("range");
 	float wet = *state->getRawParameterValue("wet");
-	float volume = *state->getRawParameterValue("volume");
+	float outGain = *state->getRawParameterValue("outGain");
 	auto choice = comboChoice->getIndex();
-	float inputGain;
+	
+	
+	//float inputGain;
 
 	float inputGainDecibels_;
-		
-		inputGain = powf(10.0f, inputGainDecibels_ / 20.0f); // Input Gain in Decibels (USER CONTROLLED)
+	float outGainDecibels_;
 
+		inputGain = powf(10.0f, inputGainDecibels_ / 20.0f); // Input Gain in Decibels (USER CONTROLLED)
+		outGain = powf(10.0f, outGainDecibels_ / 20.0f);
 	
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
@@ -222,7 +226,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		//in = inGain * in;
 
 		if (choice == 1) { // TestFunction
-		out = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * volume);
+		out = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * outGain);
 
 		//if (currentGain == previousGain)
 		//{
@@ -244,11 +248,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			float threshold = 1.0f; // Thresh1 = 1.0
 
 			if (in > threshold)
-				out = (threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
+				out = (threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 			else if (in < -threshold)
-				out = (-threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);
+				out = (-threshold * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 			else
-				out = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * volume);;
+				out = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 		}
 		else if (choice == 3) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
@@ -256,30 +260,30 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			if (in > threshold2)
 				out = 1.0f;
 			else if (in > threshold1)
-				out = (3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f;
+				out = (((3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 			else if (in < -threshold2)
 				out = -1.0f;
 			else if (in < -threshold1)
-				out = -(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f;
+				out = ((-(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 			else
-				out = 2.0f* in;
+				out = ((2.0f* in) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 		}
 		else if (choice == 4) //SoftClipping exponential
 		{
 			if (in > 0) 
-				out = 1.0f - expf(-in);
+				out = ((1.0f - expf(-in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 			else
-				out = -1.0f + expf(in);
+				out = ((-1.0f + expf(in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 	
 		}
 		else if (choice == 5) { // Full-wave rectifier (absolute value)
 
-			out = fabsf(in);
+			out = ((fabsf(in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 		}
 		else if (choice == 6) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
-				out = in;
+				out = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 			else
 				out = 0;
 		}
