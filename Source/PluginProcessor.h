@@ -15,7 +15,7 @@
 //==============================================================================
 /**
 */
-class SpectralDistortionAudioProcessor  : public AudioProcessor
+class SpectralDistortionAudioProcessor  : public AudioProcessor, public AudioProcessorValueTreeState::Listener
 {
 public:
     //==============================================================================
@@ -56,27 +56,33 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 
-   
+    void parameterChanged(const String& parameterID, float newValue) override;
+    AudioProcessorValueTreeState treeState;
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
 public:
     
-    AudioProcessorValueTreeState& getState();
+   // AudioProcessorValueTreeState& getState();
     //Parameters
-    //AudioParameterFloat* inputGain;
+   // float inputGain;
+   // float outGain;
     float previousGain;
-    AudioParameterChoice* comboChoice;
-   // AudioParameterFloat* inputGain;
+   // float wet;
+   // int distortionType_;
+   // AudioParameterChoice* comboChoice;
+
 
 private:
     //==============================================================================
-    ScopedPointer<AudioProcessorValueTreeState> state;
+    //ScopedPointer<AudioProcessorValueTreeState> state;
     
-  
-   //dsp::LadderFilter<float> ladderFilter;
 
 
 private:
+    dsp::LadderFilter<float> ladderFilter;
     //==============================================================================
 
+
+  
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessor)
 };

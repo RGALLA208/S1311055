@@ -14,34 +14,47 @@
 //==============================================================================
 SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-       : AudioProcessor(BusesProperties()
+	: AudioProcessor(BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
 		.withInput("Input", AudioChannelSet::stereo(), true)
 #endif
 		.withOutput("Output", AudioChannelSet::stereo(), true)
 #endif
-	)
+	), treeState(*this, nullptr, Identifier("PARAMETERS"),
+		{
+			std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -48.0f, 0.0f, -15.0f),
+				std::make_unique<AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.001f),
+				std::make_unique<AudioParameterFloat>("outGain", "Output Gain", 0.f, 3.0f, 0.01f),
+				std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",
+					"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0) })
 
-#endif
+
+
+#endif 
 {
-	state = new AudioProcessorValueTreeState(*this, nullptr);
+	const StringArray params = { "inputGain", "Wet", "outGain", "distortionSelect"};
+	for (int i = 0; i <= 3; ++i)
+	{
+		// adds a listener to each parameter in the array.
+		treeState.addParameterListener(params[i], this);
+	}
 
 	
-	state->createAndAddParameter("inputGain", "Input Gain", "Input Gain", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.0f, 3000.f, 1), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
-	state->createAndAddParameter("outGain", "Output Gain", "Output Gain", NormalisableRange<float>(0.f, 3.0f, 0.001), 1.0, nullptr, nullptr);
+	//state->createAndAddParameter("inputGain", "Input Gain", "Input Gain", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
+	//state->createAndAddParameter("range", "Range", "Range", NormalisableRange<float>(0.0f, 3000.f, 1), 1.0, nullptr, nullptr);
+	//state->createAndAddParameter("wet", "Wet", "Wet", NormalisableRange<float>(0.0f, 1.0f, 0.001), 1.0, nullptr, nullptr);
+	//state->createAndAddParameter("outGain", "Output Gain", "Output Gain", NormalisableRange<float>(0.f, 3.0f, 0.001), 1.0, nullptr, nullptr);
 	//std::make_unique<AudioParameterChoice>("distortionType_", "Distortion Type:", StringArray("arcTan", "Hard Clipping", "Soft Clipping",
 		//"Soft Clipping Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0);
 
-	state->state = ValueTree("inputGain");
-	state->state = ValueTree("range");
-	state->state = ValueTree("wet");
-	state->state = ValueTree("outGain");
+//	state->state = ValueTree("inputGain");
+//	state->state = ValueTree("range");
+//	state->state = ValueTree("wet");
+//	state->state = ValueTree("outGain");
 	//state->state = ValueTree("distortionType_");
 
-	addParameter(comboChoice = new AudioParameterChoice("choice", "Clipping algorithm", { "Select one", "Test", "Hard Clipping", "Soft Clipping", "Soft Clipping Expo", "Full-Wave Rectifier", "Half-Wave Rectifier" }, 0));
+//	addParameter(comboChoice = new AudioParameterChoice("choice", "Clipping algorithm", { "Select one", "Test", "Hard Clipping", "Soft Clipping", "Soft Clipping Expo", "Full-Wave Rectifier", "Half-Wave Rectifier" }, 0));
 	
 	//addParameter(inputGain = new AudioParameterFloat("inGain", "Input Gain", <float>0.0f, 1.0f, 0.5f));
  }
@@ -49,6 +62,8 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 SpectralDistortionAudioProcessor::~SpectralDistortionAudioProcessor()
 {
 }
+
+
 
 //==============================================================================
 const String SpectralDistortionAudioProcessor::getName() const
@@ -121,7 +136,13 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 	//previousGain = *inputGain;
 	//dsp::ProcessSpec spec;
 
-	
+	dsp::ProcessSpec spec;
+	spec.sampleRate = sampleRate;
+	spec.maximumBlockSize = samplesPerBlock;
+	spec.numChannels = getTotalNumOutputChannels();
+	ladderFilter.reset();
+	ladderFilter.prepare(spec);
+	ladderFilter.setEnabled(true);
 
 
 
@@ -186,6 +207,9 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+	juce::dsp::AudioBlock<float> block(buffer);
+	auto processingContext = dsp::ProcessContextReplacing<float>(block);
+	ladderFilter.process(processingContext);
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     // Make sure to reset the state if your inner loop is processing
@@ -194,21 +218,29 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     // interleaved by keeping the same state.
 
 
-	float inputGain = *state->getRawParameterValue("inputGain");
-	float range = *state->getRawParameterValue("range");
-	float wet = *state->getRawParameterValue("wet");
-	float outGain = *state->getRawParameterValue("outGain");
-	auto choice = comboChoice->getIndex();
+	//float inputGain = *state->getRawParameterValue("inputGain");
+	//float range = *state->getRawParameterValue("range");
+	//float wet = *state->getRawParameterValue("wet");
+	//float outGain = *state->getRawParameterValue("outGain");
+	//auto choice = comboChoice->getIndex();
 	
 	
 	//float inputGain;
+	float inputGain = *treeState.getRawParameterValue("inputGain");
+	float wet = *treeState.getRawParameterValue("wet");
+	float outGain = *treeState.getRawParameterValue("outGain");
+	
 
 	float inputGainDecibels_;
 	float outGainDecibels_;
+	int distortionSelect = *treeState.getRawParameterValue("distortionSelect");
 
-		inputGain = powf(10.0f, inputGainDecibels_ / 20.0f); // Input Gain in Decibels (USER CONTROLLED)
-		outGain = powf(10.0f, outGainDecibels_ / 20.0f);
+
 	
+	
+	//float inputGainDecibels_ = powf(10.0f,inputGain / 20.0f); // Input Gain in Decibels (USER CONTROLLED)
+
+
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
@@ -222,10 +254,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		const float in = channelData[i] * inputGain;
 		auto cleanSignal = in;
 		float out;
+		float wet;
 		
 		//in = inGain * in;
 
-		if (choice == 1) { // TestFunction
+		if (distortionSelect == 1) { // TestFunction
 		out = (((2.f / float_Pi) * atan(in) * wet) + (cleanSignal * (1.f - wet) / 2.f) * outGain);
 
 		//if (currentGain == previousGain)
@@ -236,15 +269,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		//{
 		//	buffer.applyGainRamp(0, buffer.getNumSamples(), previousGain, currentGain);
 	//		previousGain = currentGain;
-	//}
-
-	
-		
-			
+	//
 			
 		}
 
-		if (choice == 2) { // HardClipping
+		if (distortionSelect == 2) { // HardClipping
 			float threshold = 1.0f; // Thresh1 = 1.0
 
 			if (in > threshold)
@@ -254,7 +283,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			else
 				out = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 		}
-		else if (choice == 3) { //SoftClipping
+		else if (distortionSelect == 3) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
 			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
 			if (in > threshold2)
@@ -268,7 +297,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			else
 				out = ((2.0f* in) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 		}
-		else if (choice == 4) //SoftClipping exponential
+		else if (distortionSelect == 4) //SoftClipping exponential
 		{
 			if (in > 0) 
 				out = ((1.0f - expf(-in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
@@ -276,11 +305,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				out = ((-1.0f + expf(in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 	
 		}
-		else if (choice == 5) { // Full-wave rectifier (absolute value)
+		else if (distortionSelect == 5) { // Full-wave rectifier (absolute value)
 
 			out = ((fabsf(in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
 		}
-		else if (choice == 6) { // Half-wave rectifier (absolute value)
+		else if (distortionSelect == 6) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
 				out = (in * wet) + ((cleanSignal * (1.f - wet) / 2.f) * outGain);
@@ -295,12 +324,6 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
     }
 
 
-
-AudioProcessorValueTreeState& SpectralDistortionAudioProcessor::getState() {
-
-	return *state;
-}
-
 //==============================================================================
 bool SpectralDistortionAudioProcessor::hasEditor() const
 {
@@ -310,7 +333,7 @@ bool SpectralDistortionAudioProcessor::hasEditor() const
 AudioProcessorEditor* SpectralDistortionAudioProcessor::createEditor()
 {
 
-	return new SpectralDistortionAudioProcessorEditor( *this);
+	return new SpectralDistortionAudioProcessorEditor(*this, treeState);
 
 
 }
@@ -323,7 +346,7 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // as intermediaries to make it easy to save and load complex data.
 
 	MemoryOutputStream stream(destData, true);
-	state->state.writeToStream(stream);
+
 
 
 }
@@ -333,12 +356,12 @@ void SpectralDistortionAudioProcessor::setStateInformation (const void* data, in
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 
-	ValueTree tree = ValueTree::readFromData(data, sizeInBytes);
+	//ValueTree tree = ValueTree::readFromData(data, sizeInBytes);
 
-	if (tree.isValid()) {
-
-		state->state = tree;
-	}
+	//if (tree.isValid()) {
+	//
+		//state->state = tree;
+	//}
 }
 
 //==============================================================================
@@ -349,4 +372,8 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 }
 
 
+void SpectralDistortionAudioProcessor::parameterChanged(const String& parameterID, float newValue)
+{
+
+}
 
