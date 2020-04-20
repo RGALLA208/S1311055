@@ -229,11 +229,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 	float inputGain = *treeState.getRawParameterValue("inputGain");
 	float wet = *treeState.getRawParameterValue("wet");
 	float outGain = *treeState.getRawParameterValue("outGain");
-	
+	int distortionSelect = *treeState.getRawParameterValue("distortionSelect");
 
 	float inputGainDecibels_;
 	float outGainDecibels_;
-	int distortionSelect = *treeState.getRawParameterValue("distortionSelect");
+	
 
 
 	
@@ -255,6 +255,10 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		auto cleanSignal = in;
 		float out;
 		float wet;
+
+		//===================================================================
+		// =============TONE CONTROL USING CUTOFF VALUE OF LP FILTER=========
+		//====================================================================
 		
 		//in = inGain * in;
 

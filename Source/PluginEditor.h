@@ -32,10 +32,17 @@ private:
     SpectralDistortionAudioProcessor& processor;
     AudioProcessorValueTreeState& treeState;
 
+    //Controls
     Slider inputGainDial;
     Slider wetDial;
     Slider outGainDial;
     ComboBox distortionSel;
+
+    //Filter
+    Slider FilterCutoffDial;
+    Slider FilterResonanceDial;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> filterCutoffValue;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> filterResonanceValue;
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> inputGainValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> wetValue;
