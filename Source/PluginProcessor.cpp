@@ -23,9 +23,9 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 	), treeState(*this, nullptr, Identifier("PARAMETERS"),
 		{
-			std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", 0.0f, 1.0f, 0.001f),
+			std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -60.0f, 30.0f, 0.01f),
 			std::make_unique<AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.001f),
-			std::make_unique<AudioParameterFloat>("outGain", "Output Gain", 0.0f, 1.0f, 0.001f),
+			std::make_unique<AudioParameterFloat>("outGain", "Output Gain", -60.0f, 30.0f, 0.01f),
 			std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",
 					"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0),
 			std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff",  20.0f, 20000.0f, 20000.0f),
@@ -181,17 +181,6 @@ bool SpectralDistortionAudioProcessor::isBusesLayoutSupported (const BusesLayout
 }
 #endif
 
-float DecibelConversion(float GainValue) {
-
-	float GainDB;
-
-	if (GainValue != 0.0f)
-		GainDB = 20.0f * log10(GainValue);
-	else
-		GainDB = -144.0f;  // effectively minus infinity
-
-	return GainDB;
-}
 
 void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
@@ -241,30 +230,33 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 	
 	
 	//float inputGain;
-	float inputGain = *treeState.getRawParameterValue("inputGain");
+	float inputGaindB = *treeState.getRawParameterValue("inputGain"); //Linear Value
 	float wet = *treeState.getRawParameterValue("wet");
-	float outGain = *treeState.getRawParameterValue("outGain");
+	float outGaindB = *treeState.getRawParameterValue("outGain");
 	int distortionSelect = *treeState.getRawParameterValue("distortionSelect");
 	float LPcutoff = *treeState.getRawParameterValue("filterCutoff");
 	float LPresonance = *treeState.getRawParameterValue("filterResonance");
 	
-	float inputGainDecibels = DecibelConversion(inputGain);
-	float outGainDecibels = DecibelConversion(outGain);
+	//float inputGain = powf(10.0f, inputGaindB / 20.0f);
+	float inputGain = Decibels::decibelsToGain(inputGaindB);
+	float  outGain = Decibels::decibelsToGain(outGaindB);
 	
 	//float inputGainDecibels_ = powf(10.0f,inputGain / 20.0f); // Input Gain in Decibels (USER CONTROLLED)
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
-		//auto currentGain = (inputGain->get()); //Get Input Gain Value
-		//auto distortionType_ = comboChoice->getIndex();
+		
 
 		// ..do something to the data...
 			for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
-		const float in = channelData[i] * inputGainDecibels;
-		auto cleanSignal = in;
-		float out;
-		//float wet;
+				channelData[i]= channelData[i] * inputGain; //Apply input Gain
+				float in = channelData[i];
+				
+				auto cleanSignal = in;
+
+				float out;
+				
 
 		//===================================================================
 		// =============TONE CONTROL USING CUTOFF VALUE OF LP FILTER=========
@@ -272,10 +264,10 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		
 
 
-		//in = inGain * in;
+		
 
 		if (distortionSelect == 1) { // TestFunction
-		out = (((((2.f / float_Pi) * (atan(in))) * wet) + (cleanSignal * (1.f - wet))) * outGainDecibels);
+		out = ((((2.f / float_Pi) * (atan(in))) * wet) + (cleanSignal * (1.f - wet)));
 
 		//if (currentGain == previousGain)
 		//{
@@ -293,11 +285,11 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			float threshold = 1.0f; // Thresh1 = 1.0
 
 			if (in > threshold)
-				out = (((threshold * wet) + (cleanSignal * (1.f - wet))) * outGainDecibels);
+				out = ((threshold * wet) + (cleanSignal * (1.f - wet)));
 			else if (in < -threshold)
-				out = (((-threshold * wet) + (cleanSignal * (1.f - wet))) * outGainDecibels);
+				out = ((-threshold * wet) + (cleanSignal * (1.f - wet)));
 			else
-				out = (((in * wet) + (cleanSignal * (1.f - wet))) * outGainDecibels);
+				out = ((in * wet) + (cleanSignal * (1.f - wet)));
 		}
 		else if (distortionSelect == 3) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
@@ -306,35 +298,35 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			if (in > threshold2)
 				out = 1.0f;
 			else if (in > threshold1)
-				out = (((((3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f) * wet) + ((cleanSignal * (1.f - wet) / 2.f))) * outGainDecibels);
+				out = ((((3.0f - (2.0f - 3.0f * in) * (2.0f - 3.0f * in)) / 3.0f) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
 			else if (in < -threshold2)
 				out = -1.0f;
 			else if (in < -threshold1)
-				out =((((-(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f) * wet) + ((cleanSignal * ((1.f - wet) / 2.f)))) * outGainDecibels);
+				out = (((-(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f) * wet) + ((cleanSignal * ((1.f - wet) / 2.f))));
 			else
-				out = ((((2.0f* in) * wet) + ((cleanSignal * (1.f - wet) / 2.f))) * outGainDecibels);
+				out = (((2.0f* in) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
 		}
 		else if (distortionSelect == 4) //SoftClipping exponential
 		{
 			if (in > 0) 
-				out = ((((1.0f - expf(-in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f))) * outGainDecibels);
+				out = (((1.0f - expf(-in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
 			else
-				out = ((((-1.0f + expf(in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f))) * outGainDecibels);
+				out = (((-1.0f + expf(in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
 	
 		}
 		else if (distortionSelect == 5) { // Full-wave rectifier (absolute value)
 
-			out =((((fabsf(in)) * wet) + (cleanSignal * ((1.f - wet) / 2.f))) * outGain);
+			out =(((fabsf(in)) * wet) + (cleanSignal * ((1.f - wet) / 2.f)));
 		}
 		else if (distortionSelect == 6) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
-				out = (((in * wet) + (cleanSignal * (1.f - wet))) * outGain);
+				out = ((in * wet) + (cleanSignal * (1.f - wet)));
 			else
 				out = 0;
 		}
 		//Put output back in buffer
-		channelData[i] = out;
+		channelData[i] = out * outGain;
 	}
 	}
 	
