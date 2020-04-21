@@ -66,7 +66,7 @@ public:
     //Parameters
    // float inputGain;
    // float outGain;
-    float previousGain;
+ 
    // float wet;
    // int distortionType_;
    // AudioParameterChoice* comboChoice;

@@ -23,7 +23,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     inputGainValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
         "inputGain", inputGainDial);
     inputGainDial.setSliderStyle(Slider::RotaryVerticalDrag);
-    inputGainDial.setRange(0.0f, 1.10f, 0.0f);
+    inputGainDial.setRange(0.0f, 1.0f, 0.001f);
     inputGainDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     addAndMakeVisible(&inputGainDial);
 
@@ -31,7 +31,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     wetValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
         "wet", wetDial);
     wetDial.setSliderStyle(Slider::RotaryVerticalDrag);
-    wetDial.setRange(0.0f, 1.10f, 0.0f);
+    wetDial.setRange(0.0f, 1.0f, 0.01f);
     wetDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     addAndMakeVisible(&wetDial);
    
@@ -39,7 +39,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     outGainValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
         "outGain", outGainDial);
     outGainDial.setSliderStyle(Slider::RotaryVerticalDrag);
-    outGainDial.setRange(1.0f, 25.0f, 1.0f);
+    outGainDial.setRange(0.0f, 1.0f, 0.0f);
     outGainDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     addAndMakeVisible(&outGainDial);
     
