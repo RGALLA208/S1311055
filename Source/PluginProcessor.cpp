@@ -179,6 +179,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
         buffer.clear (i, 0, buffer.getNumSamples());
 
 	juce::dsp::AudioBlock<float> block(buffer);
+
 	auto processingContext = dsp::ProcessContextReplacing<float>(block);
 	ladderFilter.process(processingContext);
     // This is the place where you'd normally do the guts of your plugin's

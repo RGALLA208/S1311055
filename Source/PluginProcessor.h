@@ -68,10 +68,9 @@ public:
    
 
 
-
-
 private:
     dsp::LadderFilter<float> ladderFilter;
+    dsp::Oversampling<float> Oversample;
    
     //==============================================================================
 
