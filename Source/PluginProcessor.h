@@ -30,6 +30,7 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
 
+   
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
 
     //==============================================================================
@@ -55,31 +56,23 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-
+   
     void parameterChanged(const String& parameterID, float newValue) override;
     AudioProcessorValueTreeState treeState;
     AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
 public:
     
-   // AudioProcessorValueTreeState& getState();
-    //Parameters
-   // float inputGain;
-   // float outGain;
- 
-   // float wet;
-   // int distortionType_;
-   // AudioParameterChoice* comboChoice;
+  
+    float out;
+   
 
 
-private:
-    //==============================================================================
-    //ScopedPointer<AudioProcessorValueTreeState> state;
-    
 
 
 private:
     dsp::LadderFilter<float> ladderFilter;
+   
     //==============================================================================
 
 
