@@ -23,9 +23,9 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 	), treeState(*this, nullptr, Identifier("PARAMETERS"),
 {
-	std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -60.0f, 40.0f, 0.01f),
+	std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -40.0f, 30.0f, 0.01f),
 		std::make_unique<AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.001f),
-		std::make_unique<AudioParameterFloat>("outGain", "Output Gain", -60.0f, 30.0f, 0.01f),
+		std::make_unique<AudioParameterFloat>("outGain", "Output Gain", -40.0f, 30.0f, 0.01f),
 		std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",
 			"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0),
 		std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 20000.0f),
@@ -139,8 +139,8 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 	ladderFilter.prepare(spec);
 	ladderFilter.setEnabled(true);
 
-	preLowPassFilter.prepare(spec);
-	postHighPassFilter.prepare(spec);
+	//preLowPassFilter.prepare(spec);
+	//postHighPassFilter.prepare(spec);
 
 
 }
@@ -219,9 +219,9 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		// ..do something to the data...
 			for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
-			channelData[i] = channelData[i] * inputGain; //Apply input Gain
 
-				float in = channelData[i];
+			 //Apply input Gain
+				float in = channelData[i] * inputGain;
 				auto cleanSignal = in;
 				float out;
 
@@ -294,8 +294,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				out = 0;
 		}
 	
-	 channelData[i] = out * outGain;
-	 channelData[i]++;
+		channelData[i] = out * outGain;
 	}
 	}
 	
