@@ -23,15 +23,15 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 	), treeState(*this, nullptr, Identifier("PARAMETERS"),
 {
-	std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -40.0f, 30.0f, 0.01f),
-		std::make_unique<AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.001f),
-		std::make_unique<AudioParameterFloat>("outGain", "Output Gain", -40.0f, 30.0f, 0.01f),
+	std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -40.f, 10.f, 0.01f),
+		std::make_unique<AudioParameterFloat>("wet", "Wet", 0.f, 1.f, 0.001f),
+		std::make_unique<AudioParameterFloat>("outGain", "Output Gain", -40.f, 10.f, 0.01f),
 		std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",
 			"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0),
-		std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 20000.0f),
-		std::make_unique<AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.10f, 0.15f),
-		std::make_unique<AudioParameterFloat>("filterDrive", "Drive", 1.0f, 25.0f, 1.0f),
-		std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("LPF12", "LPF24",
+		std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.f, 20000.f, 20000.f),
+		std::make_unique<AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.f, 0.15f),
+		std::make_unique<AudioParameterFloat>("filterDrive", "Drive", 1.f, 25.f, 1.f),
+		std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("Off", "LPF12", "LPF24",
 "HPF12", "HPF24"), 0) })
 
 
@@ -135,12 +135,14 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 	spec.sampleRate = sampleRate;
 	spec.maximumBlockSize = samplesPerBlock;
 	spec.numChannels = getTotalNumOutputChannels();
+
+
 	ladderFilter.reset();
 	ladderFilter.prepare(spec);
 	ladderFilter.setEnabled(true);
 
-	//preLowPassFilter.prepare(spec);
-	//postHighPassFilter.prepare(spec);
+	preLowPassFilter.prepare(spec);
+	postHighPassFilter.prepare(spec);
 
 
 }
@@ -190,22 +192,14 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 
 	auto processingContext = dsp::ProcessContextReplacing<float>(block);
 	ladderFilter.process(processingContext);
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-
-	
-	
-
+ 
 	float inputGaindB = *treeState.getRawParameterValue("inputGain"); //Linear Value
 	float wet = *treeState.getRawParameterValue("wet");
 	float outGaindB = *treeState.getRawParameterValue("outGain");
 	int distortionSelect = *treeState.getRawParameterValue("distortionSelect");
 	float LPcutoff = *treeState.getRawParameterValue("filterCutoff");
 	float LPresonance = *treeState.getRawParameterValue("filterResonance");
+	
 
 	float inputGain = Decibels::decibelsToGain(inputGaindB);
 	float  outGain = Decibels::decibelsToGain(outGaindB);
@@ -229,28 +223,26 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				dsp::AudioBlock<float> block(buffer);
 				dsp::ProcessContextReplacing<float> context(block);
 
+				
 				//preLowPassFilter.process(context);
 			
 
-		if (distortionSelect == 0) { // aTan Function
-			if (in > 0) {
-		
-				out =  tanh(in);
-			}
-			else 
-				out = -(0.5*tanh(in));
+				if (distortionSelect == 0) { // Tanh Function
 
-		}
 
-		
+					out = (tanh(in) * wet )+ (cleanSignal * (1 - wet));
+
+
+				}
 
 		else if (distortionSelect == 1) { // Hard Clipping
-			float threshold = 1.0f; // Thresh1 = 1.0
+			float Plusthreshold = 1.0f; // Thresh1 = 1.0
+			float Negthreshold = -0.8f; // Thresh Neg = 2.0
 			
-			if (in > threshold)
-				out = ((threshold * wet) + (cleanSignal * (1.f - wet)));
-			else if (in < -threshold)
-				out = ((-threshold * wet) + (cleanSignal * (1.f - wet)));
+			if (in > Plusthreshold)
+				out = ((Plusthreshold * wet) + (cleanSignal * (1.f - wet)));
+			else if (in < -Negthreshold)
+				out = ((-Negthreshold * wet) + (cleanSignal * (1.f - wet)));
 			else
 				out = ((in * wet) + (cleanSignal * (1.f - wet)));
 		}
@@ -268,7 +260,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			else if (in < -threshold2)
 				out = -0.8f;
 			else if (in < -threshold1)
-				out = (((-(3.0f - (2.0f + 3.0f*in) * (2.0f + 3.0f*in)) / 3.0f) * wet) + ((cleanSignal * ((1.f - wet) / 2.f))));
+				out = ((((3.0f - (2.0f + 3.0f* in) * (2.0f + 3.0f*in)) / 3.0f) * wet) + ((cleanSignal * ((1.f - wet) / 2.f))));
 			else
 				out = (((1.8f* in) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
 		}
@@ -295,6 +287,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		}
 	
 		channelData[i] = out * outGain;
+	
 	}
 	}
 	
@@ -365,13 +358,15 @@ if
 	{
 		switch ((int)newValue)
 		{
-		case 0: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF12);
+		case 0: ladderFilter.setEnabled(false);
 			break;
-		case 1: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF24);
+		case 1: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF12);
 			break;
-		case 2: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF12);
+		case 2: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF24);
 			break;
-		case 3: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF24);
+		case 3: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF12);
+			break;
+		case 4: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF24);
 			break;
 		}
 	}

@@ -44,6 +44,8 @@ private:
     Slider filterDriveDial;
     ComboBox modeSel;
 
+    Slider LP;
+
     Label inputGainLabel;
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> inputGainValue;
