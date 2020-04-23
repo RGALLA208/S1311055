@@ -27,8 +27,8 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+  
+
     SpectralDistortionAudioProcessor& processor;
     AudioProcessorValueTreeState& treeState;
 
@@ -41,8 +41,9 @@ private:
     //Filter
     Slider filterCutoffDial;
     Slider filterResonanceDial;
-
-
+    Slider filterDriveDial;
+    ComboBox modeSel;
+    Slider LP;
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> inputGainValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> wetValue;
@@ -52,24 +53,10 @@ private:
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterCutoffValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterResonanceValue;
-
-//    ScopedPointer<Slider> inputGainKnob;
-  //  ScopedPointer<Slider> rangeKnob;
-    //ScopedPointer<Slider> wetKnob;
-    //ScopedPointer<Slider> outGainKnob;
-   // ScopedPointer<ComboBox> DistortionType;
-    
-   // ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> inputGainAttatchment;
-    //ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> rangeAttatchment;
-    //ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> wetAttatchment;
-    //ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> outGainAttatchment;
-   // ScopedPointer<AudioProcessorValueTreeState::ComboBoxAttachment> DistortionAttatchment;
-    
+    std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterDriveValue;
+    std::unique_ptr <AudioProcessorValueTreeState::ComboBoxAttachment> modeSelectChoice;
 
    
-
-  
-
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpectralDistortionAudioProcessorEditor)
