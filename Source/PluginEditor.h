@@ -47,6 +47,8 @@ private:
     Slider LP;
 
     Label inputGainLabel;
+    
+
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> inputGainValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> wetValue;

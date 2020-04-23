@@ -23,7 +23,7 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 #endif
 	), treeState(*this, nullptr, Identifier("PARAMETERS"),
 {
-	std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -40.f, 10.f, 0.01f),
+	std::make_unique<AudioParameterFloat>("inputGain", "Input Gain", -20.f, 20.f, 0.01f),
 		std::make_unique<AudioParameterFloat>("wet", "Wet", 0.f, 1.f, 0.001f),
 		std::make_unique<AudioParameterFloat>("outGain", "Output Gain", -40.f, 10.f, 0.01f),
 		std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",

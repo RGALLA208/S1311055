@@ -23,11 +23,12 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     inputGainValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
         "inputGain", inputGainDial);
     inputGainDial.setSliderStyle(Slider::Rotary);
-    inputGainDial.setRange(-40.0f, 10.0f, 0.01f);
+    inputGainDial.setRange(-20.0f, 20.0f, 0.01f);
+    inputGainDial.setTextBoxStyle(Slider::TextBoxBelow, true, 40, 20);
     inputGainDial.setTextValueSuffix("dB");
-    inputGainDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     addAndMakeVisible(&inputGainDial);
 
+    
 
 
     //Wet
@@ -36,8 +37,8 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
     wetDial.setSliderStyle(Slider::Rotary);
     wetDial.setRange(0.0f, 1.0f, 0.01f);
     wetDial.setValue(0.5);
+    wetDial.setTextBoxStyle(Slider::TextBoxBelow, true, 40, 20);
     wetDial.setTextValueSuffix("%");
-    wetDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     addAndMakeVisible(&wetDial);
    
     // OutputGain
@@ -45,8 +46,8 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "outGain", outGainDial);
     outGainDial.setSliderStyle(Slider::Rotary);
     outGainDial.setRange(-40.0f, 10.0f, 0.01f);
+    outGainDial.setTextBoxStyle(Slider::TextBoxBelow, true, 40, 20);
     outGainDial.setTextValueSuffix("dB");
-    outGainDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     addAndMakeVisible(&outGainDial);
     
     // Distortion Selection
@@ -68,16 +69,15 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "filterCutoff", filterCutoffDial);
     filterCutoffDial.setSliderStyle(Slider::RotaryVerticalDrag);
     filterCutoffDial.setRange(0.0f, 20000.0f, 0.0f);
-
-    filterCutoffDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    filterCutoffDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 40, 20);
+    filterResonanceDial.setTextValueSuffix("Hz");
     addAndMakeVisible(&filterCutoffDial);
 
     filterResonanceValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
         "filterResonance", filterResonanceDial);
     filterResonanceDial.setSliderStyle(Slider::RotaryVerticalDrag);
     filterResonanceDial.setRange(0.0f, 1.0f, 0.0f);
-    filterResonanceDial.setTextValueSuffix("Hz");
-    filterResonanceDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    filterResonanceDial.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 30);
     addAndMakeVisible(&filterResonanceDial);
 
 
@@ -94,7 +94,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "filterDrive", filterDriveDial);
     filterDriveDial.setSliderStyle(Slider::RotaryVerticalDrag);
     filterDriveDial.setRange(0.0f, 1.0f, 0.0f);
-    filterDriveDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    filterDriveDial.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 30);
     addAndMakeVisible(&filterDriveDial);
 
  //   addAndMakeVisible((inputGainKnob) = new Slider("Input Gain"));
