@@ -29,8 +29,11 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 		std::make_unique<AudioParameterChoice>("distortionSelect", "Distortion Type", StringArray("aTan", "Hard Clip",
 			"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0),
 		std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 20000.0f),
-		std::make_unique<AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.10f, 0.15f)
-})
+		std::make_unique<AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.10f, 0.15f),
+		std::make_unique<AudioParameterFloat>("filterDrive", "Drive", 1.0f, 25.0f, 1.0f),
+		std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("LPF12", "LPF24",
+"HPF12", "HPF24"), 0) })
+
 
 
 
@@ -39,8 +42,11 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 
 #endif 
 {
-	const StringArray params = { "inputGain", "wet", "outGain", "distortionSelect", "filterCutoff","filterResonance" };
-	for (int i = 0; i <= 3; ++i)
+	addParameter(prmPreLP = new AudioParameterFloat("PRELP", "Pre Low-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20000.f, "Hz"));
+	addParameter(prmPostHP = new AudioParameterFloat("POSTHP", "Post High-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20.f, "Hz"));
+
+	const StringArray params = { "inputGain", "wet", "outGain", "distortionSelect", "filterCutoff","filterResonance", "drive", "mode" };
+	for (int i = 0; i <= 8; ++i)
 	{
 		// adds a listener to each parameter in the array.
 		treeState.addParameterListener(params[i], this);
@@ -133,6 +139,8 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 	ladderFilter.prepare(spec);
 	ladderFilter.setEnabled(true);
 
+	preLowPassFilter.prepare(spec);
+	postHighPassFilter.prepare(spec);
 
 
 }
@@ -211,27 +219,32 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		// ..do something to the data...
 			for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
-			channelData[i] *=  inputGain; //Apply input Gain
+			channelData[i] = channelData[i] * inputGain; //Apply input Gain
 
 				float in = channelData[i];
-				
 				auto cleanSignal = in;
-
 				float out;
 
+				ScopedNoDenormals noDenormals;
+				dsp::AudioBlock<float> block(buffer);
+				dsp::ProcessContextReplacing<float> context(block);
 
-		if (distortionSelect == 1) { // aTan Function
+				//preLowPassFilter.process(context);
+			
+
+		if (distortionSelect == 0) { // aTan Function
 			if (in > 0) {
 		
-				out = (1 / tanh(in)) * tanh(in);
+				out =  tanh(in);
 			}
 			else 
-				out = -(1 / tanh(in)) * (0.5*tanh(in));
+				out = -(0.5*tanh(in));
+
 		}
 
-	
+		
 
-		if (distortionSelect == 2) { // Hard Clipping
+		else if (distortionSelect == 1) { // Hard Clipping
 			float threshold = 1.0f; // Thresh1 = 1.0
 			
 			if (in > threshold)
@@ -242,7 +255,8 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				out = ((in * wet) + (cleanSignal * (1.f - wet)));
 		}
 		
-		if (distortionSelect == 3) { //SoftClipping
+
+		else if (distortionSelect == 2) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
 			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
 		
@@ -270,6 +284,8 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 
 			out =(((fabsf(in)) * wet) + (cleanSignal * ((1.f - wet) / 2.f)));
 		}
+
+
 		else if (distortionSelect == 6) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
@@ -277,8 +293,9 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			else
 				out = 0;
 		}
-		//Put output back in buffer
-		out = channelData[i] * outGain;
+	
+	 channelData[i] = out * outGain;
+	 channelData[i]++;
 	}
 	}
 	
@@ -307,6 +324,9 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // as intermediaries to make it easy to save and load complex data.
 
 	MemoryOutputStream stream(destData, true);
+	stream.writeFloat(*prmPreLP);
+
+
 
 
 
@@ -317,12 +337,11 @@ void SpectralDistortionAudioProcessor::setStateInformation (const void* data, in
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 
-	//ValueTree tree = ValueTree::readFromData(data, sizeInBytes);
+	ValueTree tree = ValueTree::readFromData(data, sizeInBytes);
 
-	//if (tree.isValid()) {
-	//
-		//state->state = tree;
-	//}
+
+
+
 }
 
 //==============================================================================
@@ -335,11 +354,29 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 
 void SpectralDistortionAudioProcessor::parameterChanged(const String& parameterID, float newValue)
-{
-	if (parameterID == "filterCutoff")
+{	
+if
+	 (parameterID == "filterCutoff")
 		ladderFilter.setCutoffFrequencyHz(newValue);
 	else if (parameterID == "filterResonance")
 		ladderFilter.setResonance(newValue);
+	else if (parameterID == "drive")
+		ladderFilter.setDrive(newValue);
+	else if (parameterID == "mode")
+	{
+		switch ((int)newValue)
+		{
+		case 0: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF12);
+			break;
+		case 1: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF24);
+			break;
+		case 2: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF12);
+			break;
+		case 3: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF24);
+			break;
+		}
+	}
+
 
 }
 

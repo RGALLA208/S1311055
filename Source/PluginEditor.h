@@ -41,6 +41,8 @@ private:
     //Filter
     Slider filterCutoffDial;
     Slider filterResonanceDial;
+    Slider filterDriveDial;
+    ComboBox modeSel;
 
 
 
@@ -52,7 +54,8 @@ private:
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterCutoffValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterResonanceValue;
-
+    std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> filterDriveValue;
+    std::unique_ptr <AudioProcessorValueTreeState::ComboBoxAttachment> modeSelectChoice;
 //    ScopedPointer<Slider> inputGainKnob;
   //  ScopedPointer<Slider> rangeKnob;
     //ScopedPointer<Slider> wetKnob;
