@@ -69,7 +69,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "filterCutoff", filterCutoffDial);
     filterCutoffDial.setSliderStyle(Slider::RotaryVerticalDrag);
     filterCutoffDial.setRange(0.0f, 20000.0f, 0.0f);
-    filterCutoffDial.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 40, 20);
+    filterCutoffDial.setTextBoxStyle(Slider::TextBoxBelow, true, 60, 20);
     filterResonanceDial.setTextValueSuffix("Hz");
     addAndMakeVisible(&filterCutoffDial);
 
