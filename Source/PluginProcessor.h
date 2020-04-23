@@ -63,19 +63,10 @@ public:
 
 public:
     
-    AudioParameterFloat* prmPreLP, * prmPostHP;
-   
-   
-
 
 private:
     dsp::LadderFilter<float> ladderFilter;
-    dsp::Oversampling<float> Oversample;
-   
- 
-
-    using Filter = dsp::ProcessorDuplicator<dsp::IIR::Filter<float>, dsp::IIR::Coefficients<float>>;
-    Filter preLowPassFilter, postHighPassFilter;
+  
 
     //==============================================================================
 

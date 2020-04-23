@@ -24,12 +24,9 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "inputGain", inputGainDial);
     inputGainDial.setSliderStyle(Slider::Rotary);
     inputGainDial.setRange(-20.0f, 20.0f, 0.01f);
-    inputGainDial.setTextBoxStyle(Slider::TextBoxBelow, true, 40, 20);
+    inputGainDial.setTextBoxStyle(Slider::TextBoxBelow, true, 60, 20);
     inputGainDial.setTextValueSuffix("dB");
     addAndMakeVisible(&inputGainDial);
-
-    
-
 
     //Wet
     wetValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
@@ -46,7 +43,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "outGain", outGainDial);
     outGainDial.setSliderStyle(Slider::Rotary);
     outGainDial.setRange(-40.0f, 10.0f, 0.01f);
-    outGainDial.setTextBoxStyle(Slider::TextBoxBelow, true, 40, 20);
+    outGainDial.setTextBoxStyle(Slider::TextBoxBelow, true, 60, 20);
     outGainDial.setTextValueSuffix("dB");
     addAndMakeVisible(&outGainDial);
     
@@ -69,7 +66,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "filterCutoff", filterCutoffDial);
     filterCutoffDial.setSliderStyle(Slider::RotaryVerticalDrag);
     filterCutoffDial.setRange(0.0f, 20000.0f, 0.0f);
-    filterCutoffDial.setTextBoxStyle(Slider::TextBoxBelow, true, 60, 20);
+    filterCutoffDial.setTextBoxStyle(Slider::TextBoxBelow, true, 80, 20);
     filterResonanceDial.setTextValueSuffix("Hz");
     addAndMakeVisible(&filterCutoffDial);
 
@@ -83,46 +80,20 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
 
     modeSelectChoice = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(treeState,
         "modeSelect", modeSel);
-    modeSel.addItem("OFF", 1);
-    modeSel.addItem("LPF12", 2);
-    modeSel.addItem("LPF24", 3);
-    modeSel.addItem("HPF12", 4);
-    modeSel.addItem("HPF24", 5);  
+    modeSel.addItem("LPF12", 1);
+    modeSel.addItem("LPF24", 2);
+    modeSel.addItem("HPF12", 3);
+    modeSel.addItem("HPF24", 4);  
     addAndMakeVisible(&modeSel);
 
     filterDriveValue = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(treeState,
         "filterDrive", filterDriveDial);
     filterDriveDial.setSliderStyle(Slider::RotaryVerticalDrag);
-    filterDriveDial.setRange(0.0f, 1.0f, 0.0f);
+    filterDriveDial.setRange(1.f, 25.0f, 0.01f);
     filterDriveDial.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 30);
     addAndMakeVisible(&filterDriveDial);
 
- //   addAndMakeVisible((inputGainKnob) = new Slider("Input Gain"));
-  //  inputGainKnob->setSliderStyle(Slider::Rotary);
-   // inputGainKnob ->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
-
-   // addAndMakeVisible((rangeKnob) = new Slider("Range"));
-    //rangeKnob->setSliderStyle(Slider::Rotary);
-    //rangeKnob->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
-
-    //addAndMakeVisible((wetKnob) = new Slider("Wet/Dry"));
-    //wetKnob->setSliderStyle(Slider::Rotary);
-    //wetKnob->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
-
-    //addAndMakeVisible((outGainKnob) = new Slider("Output Gain"));
-    //outGainKnob->setSliderStyle(Slider::Rotary);
-    //outGainKnob->setTextBoxStyle(Slider::NoTextBox, false, 100, 100);
-
-    //addAndMakeVisible((DistortionType_) = new ComboBox("Distortion"));
-    
-    //inputGainAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "inputGain", *inputGainKnob);
-    //rangeAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "range", *rangeKnob);
-    //wetAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "wet", *wetKnob);
-    //outGainAttatchment = new AudioProcessorValueTreeState::SliderAttachment(p.getState(), "outGain", *outGainKnob);
-    //DistortionAttatchment = new AudioProcessorValueTreeState::ComboBoxAttachment(p.getState(), "distortion", *DistortionType);
-
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
+ 
 
 setSize(700, 500);
    
@@ -137,20 +108,33 @@ SpectralDistortionAudioProcessorEditor::~SpectralDistortionAudioProcessorEditor(
 void SpectralDistortionAudioProcessorEditor::paint(Graphics& g)
 {
 
-    g.fillAll(Colours::lightcoral);
-    g.setColour(Colours::black);
+    g.fillAll(Colours::darkslateblue);
+   
 
+    g.setColour(Colours::azure);
+    g.setFillType(Colours::palevioletred);
+    g.fillRect(150, 50, 550, 140);
+
+    //g.fillRoundedRectangle(150, 50, 550, 140);
+
+
+    g.setColour(Colours::azure);
+    g.setFillType(Colours::paleturquoise);
+    g.fillRect(50, 350, 550, 140);
+  
     // Title Text
+    g.setColour(Colours::black);
     g.setFont(30);
-    g.drawFittedText("Distortion", 350, 0, 250, 10, Justification::centred, 1, 0.0f);
+    g.drawFittedText("Distortion", 250, 0, 250, 10, Justification::centred, 1, 0.0f);
+    
     // Parameter Labels 
     g.setFont(25);
-    g.drawFittedText("Input Gain", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.8), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Wet", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.8), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Output Gain", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.8), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Tone", ((getWidth() / 5) * 1.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Resonance", ((getWidth() / 5) * 2.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Saturation", ((getWidth() / 5) * 3.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Input Gain", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.7), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Wet", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.7), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Output Gain", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.7), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Tone", ((getWidth() / 5) * 2.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Resonance", ((getWidth() / 5) * 3.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Saturation", ((getWidth() / 5) * 4.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
 
 
 }
@@ -166,12 +150,9 @@ void SpectralDistortionAudioProcessorEditor::resized()
     distortionSel.setBounds(((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 1.8) - (100 / 2)), 100, 100);
 
 
-    filterCutoffDial.setBounds(((getWidth() / 5) * 1.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
-    filterResonanceDial.setBounds(((getWidth() / 5) * 2.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
-    filterDriveDial.setBounds(((getWidth() / 5) * 3.5) - (100 / 2), (getHeight() / 5) - (100 / 2), 100, 100);
-    modeSel.setBounds(((getWidth() / 5 * 4.5) - (100 / 2)), ((getHeight() / 5) - (100 / 2)), 100, 100);
-
-   
-
+    filterCutoffDial.setBounds(((getWidth() / 5) * 2.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
+    filterResonanceDial.setBounds(((getWidth() / 5) * 3.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
+    filterDriveDial.setBounds(((getWidth() / 5) * 4.5) - (100 / 2), (getHeight() / 5) - (100 / 2), 100, 100);
+    modeSel.setBounds(((getWidth() / 5) * 1.5) - (100 / 2), ((getHeight() / 5) - (100 / 2)), 100, 100);
 
 }

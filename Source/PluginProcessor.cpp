@@ -31,19 +31,13 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 		std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.f, 20000.f, 20000.f),
 		std::make_unique<AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.f, 0.15f),
 		std::make_unique<AudioParameterFloat>("filterDrive", "Drive", 1.f, 25.f, 1.f),
-		std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("Off", "LPF12", "LPF24",
+		std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("LPF12", "LPF24",
 "HPF12", "HPF24"), 0) })
-
-
-
-
-
-
 
 #endif 
 {
-	addParameter(prmPreLP = new AudioParameterFloat("PRELP", "Pre Low-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20000.f, "Hz"));
-	addParameter(prmPostHP = new AudioParameterFloat("POSTHP", "Post High-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20.f, "Hz"));
+	//addParameter(prmPreLP = new AudioParameterFloat("PRELP", "Pre Low-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20000.f, "Hz"));
+	//addParameter(prmPostHP = new AudioParameterFloat("POSTHP", "Post High-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20.f, "Hz"));
 
 	const StringArray params = { "inputGain", "wet", "outGain", "distortionSelect", "filterCutoff","filterResonance", "drive", "mode" };
 	for (int i = 0; i <= 8; ++i)
@@ -141,8 +135,8 @@ void SpectralDistortionAudioProcessor::prepareToPlay (double sampleRate, int sam
 	ladderFilter.prepare(spec);
 	ladderFilter.setEnabled(true);
 
-	preLowPassFilter.prepare(spec);
-	postHighPassFilter.prepare(spec);
+	//preLowPassFilter.prepare(spec);
+	//postHighPassFilter.prepare(spec);
 
 
 }
@@ -227,7 +221,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				//preLowPassFilter.process(context);
 			
 
-				if (distortionSelect == 0) { // Tanh Function
+				if (distortionSelect == 1) { // Tanh Function
 
 
 					out = (tanh(in) * wet )+ (cleanSignal * (1 - wet));
@@ -235,7 +229,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 
 				}
 
-		else if (distortionSelect == 1) { // Hard Clipping
+		else if (distortionSelect == 2) { // Hard Clipping
 			float Plusthreshold = 1.0f; // Thresh1 = 1.0
 			float Negthreshold = -0.8f; // Thresh Neg = 2.0
 			
@@ -248,7 +242,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		}
 		
 
-		else if (distortionSelect == 2) { //SoftClipping
+		else if (distortionSelect == 3) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
 			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
 		
@@ -267,9 +261,9 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		else if (distortionSelect == 4) //SoftClipping exponential
 		{
 			if (in > 0) 
-				out = (((1.0f - expf(-in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
+				out = (((1.0f - expf(-in)) * wet) + ((cleanSignal * (1.f - wet))));
 			else
-				out = (((-1.0f + expf(in)) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
+				out = (((-1.0f + expf(in)) * wet) + ((cleanSignal * (1.f - wet))));
 	
 		}
 		else if (distortionSelect == 5) { // Full-wave rectifier (absolute value)
@@ -315,10 +309,9 @@ void SpectralDistortionAudioProcessor::getStateInformation (MemoryBlock& destDat
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 
-	MemoryOutputStream stream(destData, true);
-	stream.writeFloat(*prmPreLP);
-
-
+	auto state = treeState.copyState();
+	std::unique_ptr<XmlElement> xml(state.createXml());
+	copyXmlToBinary(*xml, destData);
 
 
 
@@ -329,12 +322,13 @@ void SpectralDistortionAudioProcessor::setStateInformation (const void* data, in
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 
-	ValueTree tree = ValueTree::readFromData(data, sizeInBytes);
+	std::unique_ptr<XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
 
-
-
-
+	if (xmlState.get() != nullptr)
+		if (xmlState->hasTagName(treeState.state.getType()))
+			treeState.replaceState(ValueTree::fromXml(*xmlState));
 }
+
 
 //==============================================================================
 // This creates new instances of the plugin..
@@ -358,15 +352,14 @@ if
 	{
 		switch ((int)newValue)
 		{
-		case 0: ladderFilter.setEnabled(false);
+		
+		case 0: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF12);
 			break;
-		case 1: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF12);
+		case 1: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF24);
 			break;
-		case 2: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::LPF24);
+		case 2: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF12);
 			break;
-		case 3: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF12);
-			break;
-		case 4: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF24);
+		case 3: ladderFilter.setMode(juce::dsp::LadderFilter<float>::Mode::HPF24);
 			break;
 		}
 	}
