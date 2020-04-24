@@ -346,7 +346,7 @@ if
 		ladderFilter.setCutoffFrequencyHz(newValue);
 	else if (parameterID == "filterResonance")
 		ladderFilter.setResonance(newValue);
-	else if (parameterID == "drive")
+	else if (parameterID == "filterDrive")
 		ladderFilter.setDrive(newValue);
 	else if (parameterID == "mode")
 	{
