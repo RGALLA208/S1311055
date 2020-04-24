@@ -79,7 +79,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
 
 
     modeSelectChoice = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(treeState,
-        "modeSelect", modeSel);
+        "mode", modeSel);
     modeSel.addItem("LPF12", 1);
     modeSel.addItem("LPF24", 2);
     modeSel.addItem("HPF12", 3);

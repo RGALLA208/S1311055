@@ -43,7 +43,6 @@ private:
     Slider filterResonanceDial;
     Slider filterDriveDial;
     ComboBox modeSel;
-    Slider LP;
 
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> inputGainValue;
     std::unique_ptr <AudioProcessorValueTreeState::SliderAttachment> wetValue;

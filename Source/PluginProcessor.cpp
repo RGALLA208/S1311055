@@ -39,7 +39,7 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 	//addParameter(prmPreLP = new AudioParameterFloat("PRELP", "Pre Low-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20000.f, "Hz"));
 	//addParameter(prmPostHP = new AudioParameterFloat("POSTHP", "Post High-Pass", { 10.f, 20000.f, 0.f, 0.5f }, 20.f, "Hz"));
 
-	const StringArray params = { "inputGain", "wet", "outGain", "distortionSelect", "filterCutoff","filterResonance", "drive", "mode" };
+	const StringArray params = { "inputGain", "wet", "outGain", "distortionSelect", "filterCutoff","filterResonance", "filterDrive", "mode" };
 	for (int i = 0; i <= 8; ++i)
 	{
 		// adds a listener to each parameter in the array.
@@ -221,7 +221,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				//preLowPassFilter.process(context);
 			
 
-				if (distortionSelect == 1) { // Tanh Function
+				if (distortionSelect == 0) { // Tanh Function
 
 
 					out = (tanh(in) * wet )+ (cleanSignal * (1 - wet));
@@ -229,7 +229,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 
 				}
 
-		else if (distortionSelect == 2) { // Hard Clipping
+		else if (distortionSelect == 1) { // Hard Clipping
 			float Plusthreshold = 1.0f; // Thresh1 = 1.0
 			float Negthreshold = -0.8f; // Thresh Neg = 2.0
 			
@@ -242,7 +242,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 		}
 		
 
-		else if (distortionSelect == 3) { //SoftClipping
+		else if (distortionSelect == 2) { //SoftClipping
 			float threshold1 = 1.0f / 3.0f; //Thresh 1 = 1/3
 			float threshold2 = 2.0f / 3.0f; // Thresh2 = 2/3
 		
@@ -258,7 +258,7 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 			else
 				out = (((1.8f* in) * wet) + ((cleanSignal * (1.f - wet) / 2.f)));
 		}
-		else if (distortionSelect == 4) //SoftClipping exponential
+		else if (distortionSelect == 3) //SoftClipping exponential
 		{
 			if (in > 0) 
 				out = (((1.0f - expf(-in)) * wet) + ((cleanSignal * (1.f - wet))));
@@ -266,13 +266,13 @@ void SpectralDistortionAudioProcessor::processBlock (AudioBuffer<float>& buffer,
 				out = (((-1.0f + expf(in)) * wet) + ((cleanSignal * (1.f - wet))));
 	
 		}
-		else if (distortionSelect == 5) { // Full-wave rectifier (absolute value)
+		else if (distortionSelect == 4) { // Full-wave rectifier (absolute value)
 
 			out =(((fabsf(in)) * wet) + (cleanSignal * ((1.f - wet) / 2.f)));
 		}
 
 
-		else if (distortionSelect == 6) { // Half-wave rectifier (absolute value)
+		else if (distortionSelect == 5) { // Half-wave rectifier (absolute value)
 
 			if (in > 0)
 				out = ((in * wet) + (cleanSignal * (1.f - wet)));
