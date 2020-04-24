@@ -30,7 +30,7 @@ SpectralDistortionAudioProcessor::SpectralDistortionAudioProcessor()
 			"Soft Clip", "Soft Clip Exponential", "Full-Wave Rectifier", "Half-Wave Rectifier"), 0),
 		std::make_unique<AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.f, 20000.f, 20000.f),
 		std::make_unique<AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.f, 0.15f),
-		std::make_unique<AudioParameterFloat>("filterDrive", "Drive", 1.f, 25.f, 1.f),
+		std::make_unique<AudioParameterFloat>("filterDrive", "Filter Drive", 1.f, 25.f, 0.01f),
 		std::make_unique<AudioParameterChoice>("mode", "Filter Type", StringArray("LPF12", "LPF24",
 "HPF12", "HPF24"), 0) })
 
