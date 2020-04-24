@@ -5,9 +5,9 @@ Hello! thank you for checking out my 'Tubular Hell' pedal.
 
 The aim of this was to attempt a simple recreation of Tube Overdrive/Distortion pedal such as the famous Ibanez Tube Screamer.
 
-================
-=== CONTROLS ===
-================
+
+                                        === CONTROLS ===
+
 
 "Distortion Type:" (Grey Drop Box)  --  The first control (stationed at the top left of the pedal) is the distortion selector,
                                         this offers a range of 6 different algorithms: aTan, Hard Clipping, Soft Clipping,
