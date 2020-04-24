@@ -113,7 +113,7 @@ void SpectralDistortionAudioProcessorEditor::paint(Graphics& g)
     //TITLE
     g.setColour(Colours::antiquewhite);
     g.setFont(40);
-    g.drawFittedText("Tubular Distortion", 250, 8, 250, 10, Justification::centred, 1, 0.0f);
+    g.drawFittedText("Tubular Hell", 250, 8, 250, 10, Justification::centred, 1, 0.0f);
     g.drawRoundedRectangle(250, 2, 255, 25, 1, 1);
 
     //Top Parameters
