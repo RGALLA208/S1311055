@@ -108,24 +108,28 @@ SpectralDistortionAudioProcessorEditor::~SpectralDistortionAudioProcessorEditor(
 void SpectralDistortionAudioProcessorEditor::paint(Graphics& g)
 {
 
-    g.fillAll(Colours::darkslateblue);
+    g.fillAll(Colours::mediumspringgreen);
    
 
-    g.setColour(Colours::azure);
-    g.setFillType(Colours::palevioletred);
-    g.fillRect(150, 50, 550, 140);
+    g.setColour(Colours::darkslateblue);
+    g.setFillType(Colours::seagreen);
+    g.fillRect(140, 40, 550, 150);
 
     //g.fillRoundedRectangle(150, 50, 550, 140);
 
 
-    g.setColour(Colours::azure);
-    g.setFillType(Colours::paleturquoise);
-    g.fillRect(50, 350, 550, 140);
+    g.setColour(Colours::seagreen);
+    g.setFillType(Colours::seagreen);
+    g.fillRect(80, 220, 560, 140);
+   
+    g.setColour(Colours::antiquewhite);
+    g.drawRoundedRectangle(80, 200, 560, 150, 1, 2);
   
     // Title Text
-    g.setColour(Colours::black);
+    g.setColour(Colours::antiquewhite);
     g.setFont(30);
-    g.drawFittedText("Distortion", 250, 0, 250, 10, Justification::centred, 1, 0.0f);
+    g.drawFittedText("Tubular", 250, 10, 250, 10, Justification::centred, 1, 0.0f);
+    g.drawRoundedRectangle(250, 0, 252, 12, 1, 1);
     
     // Parameter Labels 
     g.setFont(25);
@@ -135,7 +139,8 @@ void SpectralDistortionAudioProcessorEditor::paint(Graphics& g)
     g.drawFittedText("Tone", ((getWidth() / 5) * 2.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
     g.drawFittedText("Resonance", ((getWidth() / 5) * 3.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
     g.drawFittedText("Saturation", ((getWidth() / 5) * 4.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
-
+    g.drawFittedText("Filter Type:", ((getWidth() / 5) * 1.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Distortion Type:", ((getWidth() / 5) * 4) - (100 / 2), (getHeight() / 1.7), 100, 100, Justification::centred, 1);
 
 }
 
