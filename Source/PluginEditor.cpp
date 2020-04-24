@@ -66,7 +66,7 @@ SpectralDistortionAudioProcessorEditor::SpectralDistortionAudioProcessorEditor (
         "filterCutoff", filterCutoffDial);
     filterCutoffDial.setSliderStyle(Slider::RotaryVerticalDrag);
     filterCutoffDial.setRange(0.0f, 20000.0f, 0.0f);
-    filterCutoffDial.setTextBoxStyle(Slider::TextBoxBelow, true, 80, 20);
+    filterCutoffDial.setTextBoxStyle(Slider::TextBoxBelow, true, 100, 20);
     filterResonanceDial.setTextValueSuffix("Hz");
     addAndMakeVisible(&filterCutoffDial);
 
@@ -108,34 +108,45 @@ SpectralDistortionAudioProcessorEditor::~SpectralDistortionAudioProcessorEditor(
 void SpectralDistortionAudioProcessorEditor::paint(Graphics& g)
 {
 
-    g.fillAll(Colours::darkslateblue);
+    g.fillAll(Colours::mediumseagreen);
    
+    //TITLE
+    g.setColour(Colours::antiquewhite);
+    g.setFont(40);
+    g.drawFittedText("Tubular Distortion", 250, 8, 250, 10, Justification::centred, 1, 0.0f);
+    g.drawRoundedRectangle(250, 2, 255, 25, 1, 1);
 
-    g.setColour(Colours::azure);
-    g.setFillType(Colours::palevioletred);
-    g.fillRect(150, 50, 550, 140);
+    //Top Parameters
+    g.setColour(Colours::darkslateblue);
+    g.setFillType(Colours::mediumseagreen);
+    g.fillRect(80, 40, 600, 150);
+    
+    g.setColour(Colours::antiquewhite);
+    g.drawRoundedRectangle(80, 40, 600, 150, 1, 2);
 
     //g.fillRoundedRectangle(150, 50, 550, 140);
 
-
-    g.setColour(Colours::azure);
-    g.setFillType(Colours::paleturquoise);
-    g.fillRect(50, 350, 550, 140);
+    //Bottom Parameters
+    g.setColour(Colours::mediumseagreen);
+    g.setFillType(Colours::mediumseagreen);
+    g.fillRect(80, 220, 600, 140);
+   
+    g.setColour(Colours::antiquewhite);
+    g.drawRoundedRectangle(80, 220, 600, 140, 1, 2);
   
     // Title Text
-    g.setColour(Colours::black);
-    g.setFont(30);
-    g.drawFittedText("Distortion", 250, 0, 250, 10, Justification::centred, 1, 0.0f);
+  
     
     // Parameter Labels 
     g.setFont(25);
-    g.drawFittedText("Input Gain", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.7), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Wet", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.7), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Output Gain", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.7), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Tone", ((getWidth() / 5) * 2.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Resonance", ((getWidth() / 5) * 3.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
-    g.drawFittedText("Saturation", ((getWidth() / 5) * 4.5) - (100 / 2), (getHeight() / 2.88) - (100 / 2), 100, 100, Justification::centred, 1);
-
+    g.drawFittedText("Input Gain", ((getWidth() / 5) * 2.05) - (100 / 2), (getHeight() / 4), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Wet", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 4), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Output Gain", ((getWidth() / 5) * 4) - (100 / 2), (getHeight() / 4), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Cutoff/Tone", ((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.45) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Resonance", ((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.45) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Saturation", ((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.45) - (100 / 2), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Filter Type:", ((getWidth() / 5) * 4) - (100 / 2), (getHeight() / 1.45) - (100 /2 ), 100, 100, Justification::centred, 1);
+    g.drawFittedText("Distortion Type:", ((getWidth() / 5) * 0.93) - (100 / 2), (getHeight() / 4), 150, 100, Justification::centred, 1);
 
 }
 
@@ -144,15 +155,15 @@ void SpectralDistortionAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 
-    inputGainDial.setBounds(((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
-    wetDial.setBounds(((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
-    outGainDial.setBounds(((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
-    distortionSel.setBounds(((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 1.8) - (100 / 2)), 100, 100);
+    filterCutoffDial.setBounds(((getWidth() / 5) * 1) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
+    filterResonanceDial.setBounds(((getWidth() / 5) * 2) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
+    filterDriveDial.setBounds(((getWidth() / 5) * 3) - (100 / 2), (getHeight() / 1.8) - (100 / 2), 100, 100);
+    modeSel.setBounds(((getWidth() / 5 * 4) - (100 / 2)), ((getHeight() / 1.8) - (100 / 2)), 100, 100);
 
 
-    filterCutoffDial.setBounds(((getWidth() / 5) * 2.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
-    filterResonanceDial.setBounds(((getWidth() / 5) * 3.5) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
-    filterDriveDial.setBounds(((getWidth() / 5) * 4.5) - (100 / 2), (getHeight() / 5) - (100 / 2), 100, 100);
-    modeSel.setBounds(((getWidth() / 5) * 1.5) - (100 / 2), ((getHeight() / 5) - (100 / 2)), 100, 100);
+   inputGainDial.setBounds(((getWidth() / 5) * 2) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
+   wetDial.setBounds(((getWidth() / 5) * 3) - (100 / 2), (getHeight()/5) - (100 / 2), 100, 100);
+   outGainDial.setBounds(((getWidth() / 5) * 4) - (100 / 2), (getHeight() / 5) - (100 / 2), 100, 100);
+    distortionSel.setBounds(((getWidth() / 5) * 1) - (100 / 2), ((getHeight() / 5) - (100 / 2)), 100, 100);
 
 }
